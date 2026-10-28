@@ -1,0 +1,46 @@
+{% load static %}
+        <header>
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/inicio/">
+                        <img src="{% static 'imagens/logo.png' %}" alt="UniLar — início" class="logo">
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false"
+                        aria-label="Abrir menu">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="menuPrincipal">
+                        <ul class="navbar-nav mx-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/inicio/">Início</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'imoveis' %}">Imóveis</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/sobre/">Sobre</a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/suporte/">Dúvidas</a>
+                            </li>
+                        </ul>
+
+                        <div class="acoes-menu">
+                            <a href="/favoritos/" class="favoritos" aria-label="Meus favoritos">
+                                <i class="bi bi-heart" aria-hidden="true"></i>
+                            </a>
+
+                            <a href="{% url 'login' %}" class="btn botao-menu"{% if request.resolver_match.url_name == "login" %} aria-current="page"{% endif %}>
+                                Entrar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
