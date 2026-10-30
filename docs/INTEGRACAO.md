@@ -17,7 +17,7 @@ O projeto principal continua sendo `mysite`, com o app `unilar`. A tela recebida
 
 - Templates: `unilar/templates/unilar/`.
 - Cabeçalho compartilhado: `unilar/templates/cabecalho.html`.
-- CSS: `unilar/front/style.css`.
+- CSS: `unilar/front/css/style.css`.
 - JavaScript da galeria e formulários: `unilar/front/js/imovel.js`.
 - Imagens importadas: `unilar/front/imagens/`.
 - Backend: `unilar/models.py`, `forms.py`, `views.py`, `urls.py` e `admin.py`.
@@ -49,29 +49,25 @@ Para consultar solicitações pelo painel administrativo, use uma conta administ
 .\myvenv\Scripts\python.exe manage.py makemigrations --check --dry-run
 ```
 
-Cinco testes cobrem páginas, gravação e validação de contatos e visitas, favoritos isolados por sessão, métodos HTTP e CSRF. Também foram conferidos no navegador a galeria, o envio de contato e a persistência do favorito após recarregar. A captura `unilar/front/imagens/integracao-imovel.png` registra a aparência da página.
+Cinco testes cobrem páginas, gravação e validação de contatos e visitas, favoritos isolados por sessão, métodos HTTP e CSRF. Também foram conferidos no navegador a galeria, o envio de contato e a persistência do favorito após recarregar. A captura `docs/imagens/integracao-imovel.png` registra a aparência da página.
 
 Os arquivos modificados do projeto original foram copiados antes da integração para a pasta `backups/antes-integracao-pedro-*`, ao lado de `Projeto/`.
 
 ## Integração do Kauan
 
-Origem: https://github.com/kauanldb/unilar, branch main, consultada em 28/10/2026. Página inicial, banner, quatro imóveis e seção de benefícios adaptados ao cabeçalho principal. Arquivos: `catalogo.py`, `templates/inicio.html`, `front/style.css` e `front/imagens/`.
+Origem: https://github.com/kauanldb/unilar, branch main, consultada em 28/10/2026. Página inicial, banner, quatro imóveis e seção de benefícios adaptados ao cabeçalho principal. Arquivos: `catalogo.py`, `templates/inicio.html`, `front/css/style.css` e `front/imagens/`.
 
 O catálogo agora tem cinco imóveis de exemplo e favoritos unificados na sessão Django. A kitnet de Patos de Minas recebida do Kauan é distinta da kitnet de Rio Paranaíba recebida do Pedro. Apenas esta última possui a página completa de detalhes; os outros cartões indicam que os detalhes ainda serão adicionados. O catálogo fica definido em Python nesta etapa, sem novo cadastro no banco. A referência anterior à listagem pendente foi resolvida nesta integração; autenticação, Sobre e Suporte continuam pendentes.
 
 Sete testes passaram após a integração, incluindo filtros e favoritos compartilhados entre catálogo e detalhes. A página inicial também foi aberta e conferida no navegador em largura de celular. Backup anterior às alterações: `backups/antes-integracao-kauan/`.
 
 
-## Organização dos arquivos
+## Estrutura de arquivos
 
-Todos os estilos próprios estão em `unilar/front/style.css`, separados por comentários: geral/login, detalhes do imóvel e início/catálogo. As imagens estão em `unilar/front/imagens/`: arquivos comuns na raiz, imagens de cada tela em `inicio/` e `imovel/`, e capturas de conferência em `previas/`. O Bootstrap continua sendo carregado pelo CDN.
-
-
-## Estrutura simplificada atual
-
-- `unilar/front/style.css`: todos os estilos próprios.
-- `unilar/front/imagens/`: todas as imagens e capturas, sem subpastas.
-- `unilar/front/js/imovel.js`: JavaScript.
+- `unilar/front/css/style.css`: todos os estilos próprios, separados por comentários (geral/login, detalhes do imóvel, início/catálogo).
+- `unilar/front/js/imovel.js`: JavaScript da galeria e dos formulários.
+- `unilar/front/imagens/`: imagens usadas pelo site, sem subpastas.
 - `unilar/templates/`: todos os HTMLs, incluindo o cabeçalho, sem subpastas.
+- `docs/imagens/`: capturas de tela de conferência (não são servidas pelo site).
 
-Esta estrutura substitui a organização anterior por tela.
+O Bootstrap continua sendo carregado pelo CDN.
