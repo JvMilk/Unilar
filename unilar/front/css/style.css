@@ -111,7 +111,7 @@ a {
             rgb(233 243 255 / 94%) 77%,
             #f4f8ff 100%
         ),
-        url("imagens/universidade.jpg");
+        url("../imagens/universidade.jpg");
 
     background-size: cover;
     background-position: center;
@@ -422,7 +422,7 @@ a {
                 rgb(0 42 105 / 55%),
                 rgb(0 42 105 / 40%)
             ),
-            url("imagens/universidade.jpg");
+            url("../imagens/universidade.jpg");
     }
 
     .apresentacao {

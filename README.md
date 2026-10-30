@@ -19,12 +19,20 @@ Para manter uma chave estável entre reinicializações, defina a variável de a
 
 ## Estrutura
 
-- `mysite/`: configuração Django.
-- `unilar/templates/`: HTMLs.
-- `unilar/front/style.css`: estilos do projeto.
-- `unilar/front/imagens/`: imagens.
-- `unilar/front/js/`: JavaScript.
-- `unilar/models.py`, `forms.py`, `views.py`: backend.
+```
+manage.py
+requirements.txt
+mysite/                 configuração do projeto Django (settings, urls, wsgi, asgi)
+unilar/                 aplicativo principal
+├── models.py, forms.py, views.py, urls.py, admin.py, catalogo.py, tests.py
+├── migrations/
+├── templates/          HTMLs (páginas e cabecalho.html)
+└── front/              arquivos estáticos (STATICFILES_DIRS)
+    ├── css/style.css   estilos
+    ├── js/imovel.js    JavaScript
+    └── imagens/        imagens do site
+docs/                   documentação (INTEGRACAO.md) e capturas de tela
+```
 
 ## Funcionalidades
 
