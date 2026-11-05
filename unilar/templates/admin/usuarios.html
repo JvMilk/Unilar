@@ -1,0 +1,28 @@
+{% extends "unilar_admin/base.html" %}
+{% block title %}Usuários{% endblock %}
+{% block breadcrumb %}Usuários{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">CONTAS E PERMISSÕES</p><h1>Usuários cadastrados</h1><p>Consulte os dados das contas e os anúncios relacionados.</p></div></div>
+<div class="users-layout">
+  <section class="panel-card user-list-card">
+    <form class="filter-bar" method="get"><label class="search-control"><i class="bi bi-search"></i><input name="q" type="search" value="{{ q }}" placeholder="Buscar por nome ou e-mail"></label><button class="button button-light">Pesquisar</button></form>
+    <div class="user-list">
+      {% for usuario in usuarios %}<a class="user-list-item {% if selecionado.pk == usuario.pk %}selected{% endif %}" href="?q={{ q|urlencode }}&usuario={{ usuario.pk }}"><span class="user-initial">{{ usuario.perfilcadastro.nome|default:usuario.get_full_name|default:usuario.username|first|upper }}</span><span class="user-main"><strong>{{ usuario.perfilcadastro.nome|default:usuario.get_full_name|default:usuario.username }}</strong><small>{{ usuario.email|default:usuario.username }}</small></span><i class="bi bi-chevron-right"></i></a>
+      {% empty %}<p class="empty-row">Nenhum usuário encontrado.</p>{% endfor %}
+    </div>
+  </section>
+  <section class="panel-card user-detail-card">
+    {% if selecionado %}
+      <div class="user-detail-heading"><span class="user-initial large">{{ perfil.nome|default:selecionado.get_full_name|default:selecionado.username|first|upper }}</span><div><h2>{{ perfil.nome|default:selecionado.get_full_name|default:selecionado.username }}</h2><p>{{ selecionado.email|default:"E-mail não informado" }}</p><span class="status {% if selecionado.is_active %}status-disponivel{% else %}status-inativo{% endif %}">{% if selecionado.is_active %}Conta ativa{% else %}Conta desativada{% endif %}</span></div></div>
+      <dl class="user-facts"><dt>Usuário</dt><dd>{{ selecionado.username }}</dd><dt>Cadastrado em</dt><dd>{{ selecionado.date_joined|date:"d/m/Y H:i" }}</dd><dt>Último acesso</dt><dd>{{ selecionado.last_login|date:"d/m/Y H:i"|default:"Ainda não acessou" }}</dd><dt>CPF</dt><dd>{{ perfil.cpf|default:"Não informado" }}</dd><dt>Endereço</dt><dd>{{ perfil.endereco|default:"Não informado" }}</dd><dt>Cidade</dt><dd>{{ perfil.cidade|default:"Não informada" }}</dd><dt>Telefone</dt><dd>{{ dados_painel.telefone|default:"Não informado" }}</dd><dt>Curso</dt><dd>{{ dados_painel.curso|default:"Não informado" }}</dd><dt>Universidade</dt><dd>{{ dados_painel.universidade|default:"Não informada" }}</dd><dt>Perfil</dt><dd>{% if selecionado.is_superuser %}Superusuário{% elif selecionado.is_staff %}Administrador{% else %}Usuário{% endif %}</dd></dl>
+      {% if selecionado != user and not selecionado.is_superuser %}
+      <div class="permission-actions">
+        <form method="post" action="{% url 'admin_usuario_atualizar' selecionado.pk %}">{% csrf_token %}<button class="button {% if selecionado.is_active %}button-danger{% else %}button-primary{% endif %}" name="acao" value="ativo">{% if selecionado.is_active %}Desativar conta{% else %}Ativar conta{% endif %}</button></form>
+        {% if user.is_superuser %}<form method="post" action="{% url 'admin_usuario_atualizar' selecionado.pk %}">{% csrf_token %}<button class="button button-light" name="acao" value="staff">{% if selecionado.is_staff %}Remover acesso administrativo{% else %}Conceder acesso administrativo{% endif %}</button></form>{% endif %}
+      </div>
+      {% endif %}
+      <div class="related-list"><h3>Anúncios relacionados</h3>{% for anuncio in anuncios_usuario %}<a href="{% url 'admin_imovel_editar' anuncio.pk %}"><span>{{ anuncio.titulo }} <small>{{ anuncio.cidade }}</small></span><span class="status status-{{ anuncio.status }}">{{ anuncio.get_status_display }}</span></a>{% empty %}<p>Este usuário não possui anúncios relacionados.</p>{% endfor %}</div>
+    {% else %}<div class="empty-inbox"><i class="bi bi-person-lines-fill"></i><h2>Selecione um usuário</h2><p>Os dados cadastrais e anúncios serão exibidos aqui.</p></div>{% endif %}
+  </section>
+</div>
+{% endblock %}

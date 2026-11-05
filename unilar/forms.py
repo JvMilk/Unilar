@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from django import forms
 
-from .models import ContatoImovel, SolicitacaoVisita
+from .models import ConfiguracaoSite, ContatoImovel, Imovel, SolicitacaoVisita
 
 
 class ContatoImovelForm(forms.ModelForm):
@@ -83,3 +83,59 @@ class PerfilPainelForm(forms.ModelForm):
         from .models import DadosPainel
         model = DadosPainel
         fields = ['nome', 'telefone', 'curso', 'universidade']
+
+
+class MultipleImageInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleImageField(forms.ImageField):
+    widget = MultipleImageInput
+
+    def clean(self, data, initial=None):
+        if not data:
+            return []
+        files = data if isinstance(data, (list, tuple)) else [data]
+        return [super().clean(upload, initial) for upload in files]
+
+
+class AdminImovelForm(forms.ModelForm):
+    fotos = MultipleImageField(
+        required=False,
+        label='Adicionar fotos',
+        help_text='Selecione uma ou mais imagens. As fotos atuais são mantidas.',
+    )
+
+    class Meta:
+        model = Imovel
+        fields = [
+            'titulo', 'descricao', 'preco', 'endereco', 'bairro', 'cidade',
+            'quartos', 'banheiros', 'vagas', 'area', 'tipo',
+            'informacoes_adicionais', 'status', 'proprietario',
+        ]
+        widgets = {
+            'descricao': forms.Textarea(attrs={'rows': 4}),
+            'informacoes_adicionais': forms.Textarea(attrs={'rows': 3}),
+            'preco': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'quartos': forms.NumberInput(attrs={'min': '0'}),
+            'banheiros': forms.NumberInput(attrs={'min': '0'}),
+            'vagas': forms.NumberInput(attrs={'min': '0'}),
+            'area': forms.NumberInput(attrs={'min': '1'}),
+        }
+
+    def clean_fotos(self):
+        fotos = self.cleaned_data['fotos']
+        for foto in fotos:
+            if foto.size > 10 * 1024 * 1024:
+                raise forms.ValidationError('Cada imagem deve ter no máximo 10 MB.')
+        return fotos
+
+
+class AdminConfiguracaoForm(forms.ModelForm):
+    class Meta:
+        model = ConfiguracaoSite
+        fields = [
+            'nome_site', 'email_atendimento', 'telefone', 'instagram',
+            'facebook', 'informacoes_institucionais',
+        ]
+        widgets = {'informacoes_institucionais': forms.Textarea(attrs={'rows': 5})}

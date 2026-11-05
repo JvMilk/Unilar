@@ -1,0 +1,33 @@
+{% extends "unilar_admin/base.html" %}
+{% load static %}
+{% block title %}Gerenciar imóveis{% endblock %}
+{% block breadcrumb %}Gerenciar imóveis{% endblock %}
+{% block content %}
+<div class="properties-admin-page">
+<div class="page-heading">
+  <div><p class="eyebrow">CATÁLOGO</p><h1>Gerenciar imóveis</h1><p>Cadastre, edite e atualize os imóveis publicados no UniLar.</p></div>
+  <a class="button button-primary" href="{% url 'admin_imovel_novo' %}"><i class="bi bi-plus-lg"></i> Adicionar imóvel</a>
+</div>
+<section class="panel-card">
+  <form class="properties-filter-bar" method="get" role="search">
+    <label class="properties-search-field"><span>Buscar imóvel</span><span class="properties-search-control"><i class="bi bi-search" aria-hidden="true"></i><input type="search" name="q" value="{{ q }}" placeholder="Nome ou endereço" aria-label="Pesquisar nome ou endereço"></span></label>
+    <label class="properties-filter-field"><span>Categoria</span><select name="tipo" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option>{% for value,label in tipos %}<option value="{{ value }}" {% if tipo_selecionado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label class="properties-filter-field"><span>Disponibilidade</span><select name="status" aria-label="Filtrar por status"><option value="">Todos os status</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if status_selecionado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <div class="properties-filter-actions">
+      <button class="button button-primary" type="submit"><i class="bi bi-funnel"></i> Filtrar</button>
+      {% if q or tipo_selecionado or status_selecionado %}<a class="button button-light" href="{% url 'admin_imoveis' %}">Limpar</a>{% endif %}
+    </div>
+  </form>
+  <div class="properties-table-heading"><div><h2>Imóveis cadastrados</h2><p>Gerencie os anúncios e sua disponibilidade.</p></div><span class="properties-count">{{ imoveis|length }} resultado{{ imoveis|length|pluralize:"s" }}</span></div>
+  <div class="table-wrap properties-table-wrap"><table class="admin-table properties-table"><thead><tr><th>Imóvel</th><th>Categoria</th><th>Aluguel</th><th>Proprietário</th><th>Status</th><th>Ações</th></tr></thead><tbody>
+    {% for imovel in imoveis %}<tr>
+      <td class="property-cell" data-label="Imóvel">{% with capa=imovel.fotos.first %}{% if capa %}<img src="{{ capa.imagem.url }}" alt="">{% elif imovel.imagem_padrao %}<img src="{% static imovel.imagem_padrao %}" alt="">{% else %}<span class="image-fallback"><i class="bi bi-house"></i></span>{% endif %}{% endwith %}<span><strong>{{ imovel.titulo }}</strong><small>{{ imovel.endereco }}, {{ imovel.bairro }} — {{ imovel.cidade }}</small></span></td>
+      <td data-label="Categoria">{{ imovel.get_tipo_display }}</td><td data-label="Aluguel"><strong>R$ {{ imovel.preco }}</strong><small>/ mês</small></td><td data-label="Proprietário">{{ imovel.proprietario.email|default:"UniLar" }}</td>
+      <td data-label="Status"><span class="status status-{{ imovel.status }}">{{ imovel.get_status_display }}</span></td>
+      <td class="table-actions" data-label="Ações"><a class="icon-button" href="{% url 'admin_imovel_editar' imovel.pk %}" aria-label="Editar {{ imovel.titulo }}"><i class="bi bi-pencil"></i></a>
+        <form method="post" action="{% url 'admin_imovel_excluir' imovel.pk %}" data-confirm="Excluir este imóvel permanentemente?">{% csrf_token %}<button class="icon-button danger" aria-label="Excluir {{ imovel.titulo }}"><i class="bi bi-trash3"></i></button></form></td>
+    </tr>{% empty %}<tr><td colspan="6" class="empty-row"><i class="bi bi-houses"></i><strong>Nenhum imóvel encontrado</strong><span>Experimente ajustar ou limpar os filtros.</span></td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+</div>
+{% endblock %}

@@ -27,7 +27,37 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or get_random_secret_key()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+codespace_name = os.environ.get('CODESPACE_NAME', '').strip()
+codespaces_domain = os.environ.get(
+    'GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN', 'app.github.dev'
+).strip().lstrip('.')
+codespace_host = (
+    f'{codespace_name}-8001.{codespaces_domain}'
+    if codespace_name and codespaces_domain else ''
+)
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    f'.{codespaces_domain}' if codespaces_domain else '',
+    *([codespace_host] if codespace_host else []),
+    *[
+        host.strip()
+        for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',')
+        if host.strip()
+    ],
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://localhost:8001',
+    f'https://*.{codespaces_domain}' if codespaces_domain else '',
+    *([f'https://{codespace_host}'] if codespace_host else []),
+    *[
+        origin.strip()
+        for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',')
+        if origin.strip()
+    ],
+]
+ALLOWED_HOSTS = [host for host in ALLOWED_HOSTS if host]
+CSRF_TRUSTED_ORIGINS = [origin for origin in CSRF_TRUSTED_ORIGINS if origin]
 
 
 # Application definition
@@ -70,6 +100,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'unilar.context_processors.configuracao_site',
             ],
         },
     },
@@ -123,21 +154,26 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'unilar' / 'front',
 ]
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
-# Email
-# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
-
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+# Email replies are sent only when the SMTP host and sender are configured.
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend'
+)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', '').strip()
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '').strip()
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', '').lower() in {'1', 'true', 'yes'}
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', '').lower() in {'1', 'true', 'yes'}
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', '').strip()
 
 
 # Login com Google

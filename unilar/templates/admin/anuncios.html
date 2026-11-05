@@ -1,0 +1,17 @@
+{% extends "unilar_admin/base.html" %}
+{% block title %}Gerenciar anúncios{% endblock %}
+{% block breadcrumb %}Anúncios{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">PUBLICAÇÃO E MODERAÇÃO</p><h1>Gerenciar anúncios</h1><p>Aprove, desative ou atualize os anúncios cadastrados.</p></div></div>
+<section class="panel-card">
+  <form class="filter-bar" method="get">
+    <label class="search-control"><i class="bi bi-search"></i><input type="search" name="q" value="{{ q }}" placeholder="Pesquisar anúncio ou endereço"></label>
+    <select name="status" aria-label="Filtrar por status"><option value="">Todos os status</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if status_selecionado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <button class="button button-light">Filtrar</button>
+  </form>
+  <div class="table-wrap"><table class="admin-table"><thead><tr><th>Anúncio</th><th>Responsável</th><th>Aluguel</th><th>Status</th><th>Atualizar status</th></tr></thead><tbody>
+    {% for anuncio in anuncios %}<tr><td><strong>{{ anuncio.titulo }}</strong><small>{{ anuncio.endereco }}, {{ anuncio.cidade }}</small></td><td>{{ anuncio.proprietario.email|default:"UniLar" }}</td><td>R$ {{ anuncio.preco }}</td><td><span class="status status-{{ anuncio.status }}">{{ anuncio.get_status_display }}</span></td><td><form class="inline-status" method="post" action="{% url 'admin_anuncio_status' anuncio.pk %}">{% csrf_token %}<select name="status" aria-label="Novo status de {{ anuncio.titulo }}">{% for value,label in status_choices %}<option value="{{ value }}" {% if anuncio.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="icon-button" aria-label="Salvar status"><i class="bi bi-check2"></i></button><a class="icon-button" href="{% url 'admin_imovel_editar' anuncio.pk %}" aria-label="Editar {{ anuncio.titulo }}"><i class="bi bi-pencil"></i></a></form></td></tr>
+    {% empty %}<tr><td colspan="5" class="empty-row">Nenhum anúncio encontrado.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

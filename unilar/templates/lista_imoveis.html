@@ -1,5 +1,5 @@
 {% load static %}
-<!DOCTYPE html><html lang="pt-br"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{ titulo }} | UniLar</title>
+<!DOCTYPE html><html lang="pt-br"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{{ titulo }} | {{ configuracao_site.nome_site|default:"UniLar" }}</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link href="{% static 'style.css' %}" rel="stylesheet"></head>
@@ -11,15 +11,11 @@
     <label class="lista-busca">Buscar imóvel <input name="q" type="search" value="{{ q }}" placeholder="Nome, cidade ou bairro"></label>
 <label>Cidade<select name="cidade" aria-label="Cidade ou região">
               <option value="">Todas as cidades</option>
-              <option value="Patos de Minas - MG" {% if cidade == "Patos de Minas - MG" %}selected{% endif %}>Patos de Minas - MG</option>
-              <option value="Rio Paranaíba - MG" {% if cidade == "Rio Paranaíba - MG" %}selected{% endif %}>Rio Paranaíba - MG</option>
+              {% for cidade_opcao in cidades %}<option value="{{ cidade_opcao }}" {% if cidade == cidade_opcao %}selected{% endif %}>{{ cidade_opcao }}</option>{% endfor %}
             </select></label>
 <label>Tipo de imóvel<select name="tipo" aria-label="Tipo de imóvel">
               <option value="">Todos</option>
-              <option value="apartamento" {% if tipo == "apartamento" %}selected{% endif %}>Apartamento</option>
-              <option value="kitnet" {% if tipo == "kitnet" %}selected{% endif %}>Kitnet</option>
-              <option value="casa-compartilhada" {% if tipo == "casa-compartilhada" %}selected{% endif %}>Casa compartilhada</option>
-              <option value="casa" {% if tipo == "casa" %}selected{% endif %}>Casa</option>
+              {% for valor, rotulo in tipos %}<option value="{{ valor }}" {% if tipo == valor %}selected{% endif %}>{{ rotulo }}</option>{% endfor %}
             </select></label>
 <label>Faixa de preço<select name="preco" aria-label="Faixa de preço">
               <option value="">Todos</option>

@@ -1,0 +1,149 @@
+{% extends "unilar_admin/base.html" %}
+{% load static %}
+{% block title %}Visão geral{% endblock %}
+{% block breadcrumb %}Painel Administrativo{% endblock %}
+{% block content %}
+<div class="dashboard-welcome">
+  <div><h1>Painel Administrativo</h1><p>Olá, {{ user.first_name|default:user.username }}!</p></div>
+  <a class="button button-primary dashboard-add" href="{% url 'admin_imovel_novo' %}"><i class="bi bi-plus-lg"></i> Novo imóvel</a>
+</div>
+<section class="dashboard-stats" aria-label="Indicadores do UniLar">
+  <article class="dashboard-stat stat-properties">
+    <span class="dashboard-stat-icon"><i class="bi bi-buildings"></i></span>
+    <div><span>Imóveis cadastrados</span><strong>{{ total_imoveis }}</strong></div>
+  </article>
+  <article class="dashboard-stat stat-available">
+    <span class="dashboard-stat-icon"><i class="bi bi-check-circle"></i></span>
+    <div><span>Disponíveis</span><strong>{{ disponiveis }}</strong></div>
+  </article>
+  <article class="dashboard-stat stat-rented">
+    <span class="dashboard-stat-icon"><i class="bi bi-key"></i></span>
+    <div><span>Alugados</span><strong>{{ alugados }}</strong></div>
+  </article>
+  <a class="dashboard-stat stat-questions" href="{% url 'admin_mensagens' %}?status=pendente">
+    <span class="dashboard-stat-icon"><i class="bi bi-chat-left-dots"></i></span>
+    <div><span>Dúvidas pendentes</span><strong>{{ duvidas_pendentes|stringformat:"02d" }}</strong></div>
+  </a>
+</section>
+
+<div class="dashboard-columns">
+  <div class="dashboard-primary-column">
+    <section class="dashboard-panel activity-panel">
+      <div class="dashboard-section-heading">
+        <div class="dashboard-section-title"><i class="bi bi-bar-chart-line-fill"></i><div><h2>Atividade dos anúncios</h2><p>Imóveis cadastrados e dúvidas recebidas</p></div></div>
+        <form class="period-filter" method="get" action="{% url 'admin_dashboard' %}">
+          <label class="visually-hidden" for="activity-period">Período do gráfico</label>
+          <select id="activity-period" name="periodo" data-auto-submit>
+            <option value="7" {% if periodo == '7' %}selected{% endif %}>Últimos 7 dias</option>
+            <option value="30" {% if periodo == '30' %}selected{% endif %}>Últimos 30 dias</option>
+            <option value="90" {% if periodo == '90' %}selected{% endif %}>Últimos 90 dias</option>
+          </select>
+          <button type="submit" class="period-submit">Aplicar</button>
+        </form>
+      </div>
+      <div class="activity-chart-wrap"><canvas id="activityChart" aria-label="Atividade real dos imóveis cadastrados e dúvidas recebidas"></canvas></div>
+      <div class="chart-legend"><span><i class="legend-blue"></i> Imóveis cadastrados</span><span><i class="legend-purple"></i> Dúvidas recebidas</span></div>
+    </section>
+
+    <section class="dashboard-panel recent-properties-panel">
+      <div class="dashboard-section-heading">
+        <div class="dashboard-section-title"><i class="bi bi-buildings-fill"></i><div><h2>Imóveis recentes</h2><p>Últimos anúncios cadastrados no UniLar</p></div></div>
+        <a class="dashboard-view-all" href="{% url 'admin_imoveis' %}">Ver todos os imóveis <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div class="recent-property-grid">
+        {% for imovel in recentes %}
+        <article class="recent-property-card">
+          <div class="recent-property-image">
+            {% with foto=imovel.fotos.first %}
+              {% if imovel.imagem_padrao %}<img src="{% static imovel.imagem_padrao %}" alt="Foto de {{ imovel.titulo }}" loading="lazy">
+              {% elif foto %}<img src="{{ foto.imagem.url }}" alt="Foto de {{ imovel.titulo }}" loading="lazy">
+              {% else %}<div class="property-image-placeholder"><i class="bi bi-house"></i></div>{% endif %}
+            {% endwith %}
+            <span class="status status-{{ imovel.status }}">{{ imovel.get_status_display }}</span>
+          </div>
+          <div class="recent-property-info">
+            <h3 title="{{ imovel.titulo }}">{{ imovel.titulo }}</h3>
+            <p class="recent-property-address"><i class="bi bi-geo-alt-fill"></i>{% if imovel.endereco and imovel.endereco != imovel.bairro %}{{ imovel.endereco }} · {% endif %}{{ imovel.cidade }}{% if imovel.bairro %} · {{ imovel.bairro }}{% endif %}</p>
+            <p class="recent-property-price">R$ {{ imovel.preco }} <small>/ mês</small></p>
+            <div class="recent-property-facts">
+              <span><i class="bi bi-door-open"></i>{{ imovel.quartos }} quartos</span>
+              <span><i class="bi bi-droplet"></i>{{ imovel.banheiros }} banheiros</span>
+              <span><i class="bi bi-car-front"></i>{% if imovel.vagas %}{{ imovel.vagas }} vagas{% else %}—{% endif %}</span>
+              <details class="recent-property-menu">
+                <summary aria-label="Opções para {{ imovel.titulo }}"><i class="bi bi-three-dots"></i></summary>
+                <div class="recent-property-menu-items">
+                  {% if imovel.status == 'disponivel' %}<a href="{% url 'imovel_publico' imovel.slug %}" target="_blank" rel="noopener noreferrer"><i class="bi bi-eye"></i> Visualizar</a>{% endif %}
+                  <a href="{% url 'admin_imovel_editar' imovel.pk %}"><i class="bi bi-pencil-square"></i> Editar</a>
+                  <form method="post" action="{% url 'admin_imovel_excluir' imovel.pk %}" data-confirm="Excluir permanentemente o imóvel {{ imovel.titulo }}?">
+                    {% csrf_token %}
+                    <button type="submit"><i class="bi bi-trash3"></i> Excluir</button>
+                  </form>
+                </div>
+              </details>
+            </div>
+          </div>
+        </article>
+        {% empty %}
+        <div class="dashboard-empty-properties"><i class="bi bi-houses"></i><p>Nenhum imóvel cadastrado ainda.</p><a class="button button-primary" href="{% url 'admin_imovel_novo' %}">Adicionar primeiro imóvel</a></div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <aside class="dashboard-panel latest-questions-panel">
+    <div class="dashboard-section-heading">
+      <div class="dashboard-section-title"><i class="bi bi-envelope"></i><div><h2>Últimas dúvidas</h2></div></div>
+      <a class="dashboard-view-all" href="{% url 'admin_mensagens' %}" aria-label="Ver todas as dúvidas">Ver todas <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="latest-questions-list">
+      {% for duvida in ultimas_duvidas %}
+      <a class="latest-question" href="{% url 'admin_mensagens_detalhe' duvida.pk %}">
+        <span class="question-avatar">{{ duvida.iniciais }}</span>
+        <span class="question-content">
+          <span class="question-name">{{ duvida.nome }}</span>
+          <span class="question-message">{{ duvida.mensagem|truncatechars:76 }}</span>
+        </span>
+        <span class="question-meta"><time datetime="{{ duvida.criado_em|date:'c' }}">{{ duvida.criado_em|timesince }} atrás</time><span class="status status-{{ duvida.status }}">{{ duvida.get_status_display }}</span></span>
+      </a>
+      {% empty %}
+      <div class="dashboard-empty-questions"><i class="bi bi-chat-square-text"></i><p>Nenhuma dúvida recebida ainda.</p></div>
+      {% endfor %}
+    </div>
+  </aside>
+</div>
+{{ chart_labels|json_script:"activity-labels" }}
+{{ chart_data|json_script:"activity-properties" }}
+{{ chart_questions|json_script:"activity-questions" }}
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+  const activityCanvas = document.getElementById('activityChart');
+  const chartContext = activityCanvas.getContext('2d');
+  const blueFill = chartContext.createLinearGradient(0, 0, 0, 300);
+  blueFill.addColorStop(0, 'rgba(38, 112, 255, .18)');
+  blueFill.addColorStop(1, 'rgba(38, 112, 255, 0)');
+  const purpleFill = chartContext.createLinearGradient(0, 0, 0, 300);
+  purpleFill.addColorStop(0, 'rgba(112, 51, 255, .16)');
+  purpleFill.addColorStop(1, 'rgba(112, 51, 255, 0)');
+  new Chart(activityCanvas, {
+    type: 'line',
+    data: {
+      labels: JSON.parse(document.getElementById('activity-labels').textContent),
+      datasets: [
+        { label: 'Imóveis cadastrados', data: JSON.parse(document.getElementById('activity-properties').textContent), borderColor: '#1769ff', backgroundColor: blueFill, pointBackgroundColor: '#1769ff', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 3, borderWidth: 2.5, fill: true, tension: .35 },
+        { label: 'Dúvidas recebidas', data: JSON.parse(document.getElementById('activity-questions').textContent), borderColor: '#7138f5', backgroundColor: purpleFill, pointBackgroundColor: '#7138f5', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 3, borderWidth: 2.5, fill: true, tension: .35 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#243457', maxTicksLimit: 12, maxRotation: 0 } },
+        y: { beginAtZero: true, grid: { color: '#dce4f2' }, ticks: { color: '#243457', precision: 0 } }
+      }
+    }
+  });
+</script>
+{% endblock %}

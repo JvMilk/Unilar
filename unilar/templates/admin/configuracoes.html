@@ -1,0 +1,15 @@
+{% extends "unilar_admin/base.html" %}
+{% block title %}Configurações do site{% endblock %}
+{% block breadcrumb %}Configurações do site{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">IDENTIDADE E CONTATO</p><h1>Configurações do site</h1><p>Atualize as informações institucionais e os canais oficiais do UniLar.</p></div></div>
+<form class="panel-card admin-form settings-form" method="post">
+  {% csrf_token %}
+  <section class="form-section"><h2><i class="bi bi-globe2"></i> Identidade do site</h2><div class="form-grid">
+    {% for field in form %}
+      <label class="form-field {% if field.name == 'informacoes_institucionais' %}span-2{% endif %}" for="{{ field.id_for_label }}"><span>{{ field.label }}{% if field.field.required %} <b>*</b>{% endif %}</span>{{ field }}{% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    {% endfor %}
+  </div></section>
+  <div class="form-actions"><button class="button button-primary"><i class="bi bi-check-lg"></i> Salvar configurações</button></div>
+</form>
+{% endblock %}

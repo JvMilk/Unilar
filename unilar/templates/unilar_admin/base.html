@@ -1,0 +1,74 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Administração{% endblock %} | {{ configuracao_site.nome_site|default:"UniLar" }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{% static 'css/admin.css' %}?v=20261105-2" rel="stylesheet">
+</head>
+<body class="admin-page">
+  <button class="admin-menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+    <i class="bi bi-list"></i>
+  </button>
+  <aside class="admin-sidebar">
+    <a class="admin-brand" href="{% url 'admin_dashboard' %}">
+      <img src="{% static 'imagens/logo.png' %}" alt="{{ configuracao_site.nome_site|default:'UniLar' }}">
+    </a>
+    <nav class="admin-nav" aria-label="Administração">
+      <a href="{% url 'admin_dashboard' %}" {% if request.resolver_match.url_name == 'admin_dashboard' %}aria-current="page"{% endif %}><i class="bi bi-house-door"></i> Visão geral</a>
+      <a href="{% url 'admin_imoveis' %}" {% if request.resolver_match.url_name == 'admin_imoveis' or request.resolver_match.url_name == 'admin_imovel_novo' or request.resolver_match.url_name == 'admin_imovel_editar' %}aria-current="page"{% endif %}><i class="bi bi-buildings"></i> Imóveis</a>
+      <a href="{% url 'admin_mensagens' %}" {% if request.resolver_match.url_name == 'admin_mensagens' or request.resolver_match.url_name == 'admin_mensagens_detalhe' %}aria-current="page"{% endif %}><i class="bi bi-chat"></i> Dúvidas e mensagens{% if admin_pending_questions %}<span class="nav-count">{{ admin_pending_questions }}</span>{% endif %}</a>
+      <a href="{% url 'admin_usuarios' %}" {% if request.resolver_match.url_name == 'admin_usuarios' or request.resolver_match.url_name == 'admin_usuario_atualizar' %}aria-current="page"{% endif %}><i class="bi bi-people"></i> Usuários</a>
+      <a href="{% url 'admin_anuncios' %}" {% if request.resolver_match.url_name == 'admin_anuncios' %}aria-current="page"{% endif %}><i class="bi bi-megaphone"></i> Anúncios</a>
+      <a href="{% url 'admin_relatorios' %}" {% if request.resolver_match.url_name == 'admin_relatorios' %}aria-current="page"{% endif %}><i class="bi bi-bar-chart"></i> Relatórios</a>
+      <a href="{% url 'admin_configuracoes' %}" {% if request.resolver_match.url_name == 'admin_configuracoes' %}aria-current="page"{% endif %}><i class="bi bi-gear"></i> Configurações</a>
+    </nav>
+    <div class="admin-sidebar-bottom">
+      <a href="{% url 'inicio' %}"><i class="bi bi-box-arrow-up-right"></i> Ver site</a>
+      <form method="post" action="{% url 'sair' %}">{% csrf_token %}<button><i class="bi bi-box-arrow-left"></i> Sair</button></form>
+    </div>
+  </aside>
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div class="admin-top-title">
+        <h1>{% block header_title %}Painel Administrativo{% endblock %}</h1>
+        <p>{% block header_subtitle %}Olá, {{ user.first_name|default:"administrador" }}!{% endblock %}</p>
+      </div>
+      <div class="admin-top-actions">
+        <details class="topbar-popover notification-popover">
+          <summary class="notification-button" aria-label="Notificações">
+            <i class="bi bi-bell"></i>{% if admin_pending_questions %}<span class="notification-dot"></span>{% endif %}
+          </summary>
+          <div class="notification-menu">
+            <div class="popover-heading"><strong>Notificações</strong><span>{{ admin_pending_questions }} pendentes</span></div>
+            {% for pergunta in admin_recent_questions %}
+            <a href="{% url 'admin_mensagens_detalhe' pergunta.pk %}"><strong>{{ pergunta.nome }}</strong><span>{{ pergunta.mensagem|truncatechars:56 }}</span><small>{{ pergunta.criado_em|timesince }} atrás</small></a>
+            {% empty %}<p class="popover-empty">Você não tem dúvidas pendentes.</p>{% endfor %}
+            <a class="popover-footer" href="{% url 'admin_mensagens' %}">Abrir todas as dúvidas <i class="bi bi-arrow-right"></i></a>
+          </div>
+        </details>
+        <span class="topbar-divider"></span>
+        <details class="topbar-popover account-popover">
+          <summary class="account-button">
+            <span class="topbar-avatar">{{ user.first_name|default:user.username|first|upper }}</span>
+            <span class="topbar-account-name">Administrador<small>{{ user.get_full_name|default:user.username }}</small></span>
+            <i class="bi bi-chevron-down account-chevron"></i>
+          </summary>
+          <div class="account-menu">
+            <a href="{% url 'admin_configuracoes' %}"><i class="bi bi-gear"></i> Configurações do site</a>
+            <form method="post" action="{% url 'sair' %}">{% csrf_token %}<button><i class="bi bi-box-arrow-right"></i> Sair da conta</button></form>
+          </div>
+        </details>
+      </div>
+    </header>
+    <section class="admin-content">
+      {% for message in messages %}<div class="admin-alert {{ message.tags }}" role="status">{{ message }}</div>{% endfor %}
+      {% block content %}{% endblock %}
+    </section>
+  </main>
+  <script src="{% static 'js/admin.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,7 +1,22 @@
 from django.urls import path
 from . import views
+from . import admin_views
 
 urlpatterns = [
+    path('administracao/', admin_views.dashboard, name='admin_dashboard'),
+    path('administracao/relatorios/', admin_views.relatorios_admin, name='admin_relatorios'),
+    path('administracao/imoveis/', admin_views.imoveis_admin, name='admin_imoveis'),
+    path('administracao/imoveis/novo/', admin_views.imovel_form, name='admin_imovel_novo'),
+    path('administracao/imoveis/<int:pk>/editar/', admin_views.imovel_form, name='admin_imovel_editar'),
+    path('administracao/imoveis/<int:pk>/excluir/', admin_views.excluir_imovel, name='admin_imovel_excluir'),
+    path('administracao/anuncios/', admin_views.anuncios_admin, name='admin_anuncios'),
+    path('administracao/anuncios/<int:pk>/status/', admin_views.atualizar_anuncio, name='admin_anuncio_status'),
+    path('administracao/mensagens/', admin_views.mensagens_admin, name='admin_mensagens'),
+    path('administracao/mensagens/<int:pk>/', admin_views.mensagens_admin, name='admin_mensagens_detalhe'),
+    path('administracao/mensagens/<int:pk>/responder/', admin_views.responder_mensagem, name='admin_mensagem_responder'),
+    path('administracao/usuarios/', admin_views.usuarios_admin, name='admin_usuarios'),
+    path('administracao/usuarios/<int:pk>/permissoes/', admin_views.atualizar_usuario, name='admin_usuario_atualizar'),
+    path('administracao/configuracoes/', admin_views.configuracoes_admin, name='admin_configuracoes'),
     path('painel/', views.painel, name='painel'),
     path('sair/', views.sair, name='sair'),
     path('', views.inicio, name='home'),
@@ -11,8 +26,10 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('imoveis/', views.imoveis, name='imoveis'),
     path('imoveis/kitnet-no-centro/', views.detalhe_imovel, name='detalhe_imovel'),
+    path('imoveis/kitnet-no-centro/contato/', views.contato_imovel, name='contato_imovel'),
+    path('imoveis/<slug:slug>/contato/', views.contato_imovel_publico, name='contato_imovel_publico'),
+    path('imoveis/<slug:slug>/', views.imovel_publico, name='imovel_publico'),
     path('favoritos/', views.favoritos, name='favoritos'),
     path('imoveis/kitnet-no-centro/favoritar/', views.favoritar_imovel, name='favoritar_imovel'),
-    path('imoveis/kitnet-no-centro/contato/', views.contato_imovel, name='contato_imovel'),
     path('imoveis/kitnet-no-centro/visita/', views.solicitar_visita, name='solicitar_visita'),
 ]

@@ -1,11 +1,10 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
 from .forms import ContatoImovelForm, SolicitacaoVisitaForm
-from .catalogo import IMOVEIS
 from .forms import CadastroForm
-from .models import PerfilCadastro
+from .models import Imovel, PerfilCadastro
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login as entrar
 from django.db import IntegrityError, transaction
@@ -22,7 +21,7 @@ def login(request):
         if usuario is not None:
             entrar(request, usuario)
             request.session.set_expiry(None if request.POST.get('lembrar') else 0)
-            return redirect('inicio')
+            return redirect('admin_dashboard' if usuario.is_staff else 'inicio')
         messages.error(request, 'E-mail ou senha incorretos.')
     return render(request, 'login.html', {'google_login_ativo': settings.GOOGLE_LOGIN_ATIVO})
 
@@ -63,10 +62,13 @@ def catalogo(request, titulo='Imóveis', somente_favoritos=False, template='inic
     ordenar = request.GET.get('ordem', '')
     limite = request.GET.get('maximo', '')
     tetos = ('1200', '1800', '2500', '3500')
-    bairros = ('Centro', 'Jardim', 'Planalto')
+    bairros = Imovel.objects.filter(
+        status=Imovel.Status.DISPONIVEL,
+    ).exclude(bairro='').values_list('bairro', flat=True).distinct().order_by('bairro')
     resultado = []
-    for item in IMOVEIS:
-        if titulo == 'Imóveis em destaque' and 'etiqueta' in item:
+    for registro in Imovel.objects.filter(status=Imovel.Status.DISPONIVEL).prefetch_related('fotos'):
+        item = dados_catalogo(registro, salvos)
+        if titulo == 'Imóveis em destaque' and item.get('destaque'):
             continue
         if bairro and bairro != item.get('bairro'):
             continue
@@ -92,14 +94,77 @@ def catalogo(request, titulo='Imóveis', somente_favoritos=False, template='inic
         'q': busca, 'bairro': bairro, 'bairros': bairros, 'ordem': ordenar,
         'maximo': limite, 'tetos': tetos,
         'titulo': titulo, 'imoveis': resultado, 'cidade': cidade,
-        'tipo': tipo, 'preco': preco,
+        'tipo': tipo, 'tipos': Imovel.Tipo.choices, 'preco': preco,
+        'cidades': Imovel.objects.filter(
+            status=Imovel.Status.DISPONIVEL,
+        ).values_list('cidade', flat=True).distinct().order_by('cidade'),
         'favorito': IMOVEL in salvos,
     })
 
 
+def dados_catalogo(imovel, salvos=None):
+    foto = next(iter(imovel.fotos.all()), None)
+    if imovel.imagem_padrao:
+        imagem = imovel.imagem_padrao
+    elif foto:
+        imagem = ''
+    else:
+        imagem = 'imagens/imovel-1.jpg'
+    return {
+        'slug': imovel.slug,
+        'bairro': imovel.bairro,
+        'tipo': imovel.tipo,
+        'cidade': imovel.cidade,
+        'preco': imovel.preco,
+        'titulo': imovel.titulo,
+        'imagem': imagem,
+        'imagem_url': foto.imagem.url if foto else '',
+        'detalhes': (
+            f'{imovel.quartos} quarto(s) · {imovel.banheiros} banheiro(s) · '
+            f'{imovel.area} m²'
+        ),
+        'descricao': imovel.descricao,
+        'destaque': imovel.destaque,
+        'etiqueta': imovel.destaque or imovel.get_tipo_display(),
+        'favorito': imovel.slug in (salvos or []),
+    }
+
+
+def imovel_publico(request, slug):
+    imovel = get_object_or_404(
+        Imovel.objects.prefetch_related('fotos'),
+        slug=slug,
+        status=Imovel.Status.DISPONIVEL,
+    )
+    request.session['visitados'] = list(dict.fromkeys(
+        request.session.get('visitados', []) + [slug]
+    ))
+    return render(request, 'imovel_publico.html', {
+        'imovel': imovel,
+        'fotos': imovel.fotos.all(),
+        'favorito': slug in request.session.get('favoritos', []),
+    })
+
+
+@require_POST
+def contato_imovel_publico(request, slug):
+    imovel = get_object_or_404(Imovel, slug=slug, status=Imovel.Status.DISPONIVEL)
+    form = ContatoImovelForm(request.POST)
+    if not form.is_valid():
+        return render(request, 'imovel_publico.html', {
+            'imovel': imovel, 'fotos': imovel.fotos.all(), 'form': form,
+            'favorito': slug in request.session.get('favoritos', []),
+        }, status=400)
+    contato = form.save(commit=False)
+    contato.imovel = slug
+    contato.save()
+    messages.success(request, 'Sua dúvida foi enviada. A equipe UniLar responderá em breve.')
+    return redirect('imovel_publico', slug=slug)
+
+
 @require_POST
 def favoritar_catalogo(request, slug):
-    if slug not in {item['slug'] for item in IMOVEIS}:
+    if not Imovel.objects.filter(slug=slug, status=Imovel.Status.DISPONIVEL).exists():
         raise Http404
     salvos = request.session.get('favoritos', [])
     if slug in salvos:
@@ -111,11 +176,18 @@ def favoritar_catalogo(request, slug):
 
 
 def detalhe_imovel(request):
+    imovel = get_object_or_404(
+        Imovel.objects.prefetch_related('fotos'),
+        slug=IMOVEL,
+        status=Imovel.Status.DISPONIVEL,
+    )
     visitados = request.session.get('visitados', [])
     if IMOVEL not in visitados:
         request.session['visitados'] = visitados + [IMOVEL]
     return render(request, 'imovel.html', {
         'favorito': IMOVEL in request.session.get('favoritos', []),
+        'imovel': imovel,
+        'fotos': imovel.fotos.all(),
     })
 
 
@@ -190,8 +262,14 @@ def painel(request):
     return render(request, 'painel.html', {
         'nome': nome, 'dados': dados, 'form': form,
         'editando': request.method == 'POST' or request.GET.get('editar') == '1',
-        'salvos': [item for item in IMOVEIS if item['slug'] in salvos],
-        'visitados': [item for item in IMOVEIS if item['slug'] in visitados],
+        'salvos': [
+            dados_catalogo(item, salvos)
+            for item in Imovel.objects.filter(slug__in=salvos, status=Imovel.Status.DISPONIVEL).prefetch_related('fotos')
+        ],
+        'visitados': [
+            dados_catalogo(item, salvos)
+            for item in Imovel.objects.filter(slug__in=visitados, status=Imovel.Status.DISPONIVEL).prefetch_related('fotos')
+        ],
     })
 
 

@@ -1,0 +1,30 @@
+{% extends "unilar_admin/base.html" %}
+{% block title %}{% if imovel %}Editar imóvel{% else %}Novo imóvel{% endif %}{% endblock %}
+{% block breadcrumb %}<a href="{% url 'admin_imoveis' %}">Gerenciar imóveis</a> / {% if imovel %}Editar{% else %}Novo imóvel{% endif %}{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">CATÁLOGO DE IMÓVEIS</p><h1>{% if imovel %}Editar imóvel{% else %}Adicionar imóvel{% endif %}</h1><p>Preencha as informações que serão exibidas no anúncio público.</p></div>
+  <a class="button button-light" href="{% url 'admin_imoveis' %}"><i class="bi bi-arrow-left"></i> Voltar</a>
+</div>
+<form class="panel-card admin-form" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+  <section class="form-section"><h2><i class="bi bi-house"></i> Informações do imóvel</h2><div class="form-grid">
+    {% for field in form %}
+      {% if field.name != 'fotos' %}
+      <label class="form-field {% if field.name == 'descricao' or field.name == 'informacoes_adicionais' %}span-2{% endif %}" for="{{ field.id_for_label }}">
+        <span>{{ field.label }}{% if field.field.required %} <b>*</b>{% endif %}</span>{{ field }}
+        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+        {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+      </label>
+      {% endif %}
+    {% endfor %}
+  </div></section>
+  <section class="form-section"><h2><i class="bi bi-images"></i> Fotos do imóvel</h2>
+    <label class="form-field upload-field"><span>{{ form.fotos.label }}</span>{{ form.fotos }}<small>{{ form.fotos.help_text }}</small>{% for error in form.fotos.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</label>
+    <div class="photo-preview" id="photoPreview" aria-live="polite"></div>
+    {% if fotos %}<div class="current-photos"><h3>Fotos atuais</h3><div class="photo-list">{% for foto in fotos %}<label><img src="{{ foto.imagem.url }}" alt="Foto do imóvel"><span><input type="checkbox" name="excluir_fotos" value="{{ foto.pk }}"> Remover</span></label>{% endfor %}</div></div>{% endif %}
+  </section>
+  <div class="form-actions"><a class="button button-light" href="{% url 'admin_imoveis' %}">Cancelar</a><button class="button button-primary"><i class="bi bi-check-lg"></i> Salvar imóvel</button></div>
+</form>
+{% endblock %}

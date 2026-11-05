@@ -1,7 +1,7 @@
 {% load static %}
 <article class="painel-imovel">
-  <a href="{% if imovel.slug == 'kitnet-no-centro' %}{% url 'detalhe_imovel' %}{% else %}{% url 'imoveis' %}?q={{ imovel.titulo|urlencode }}{% endif %}">
-    <img src="{% static imovel.imagem %}" alt="{{ imovel.titulo }}" loading="lazy">
+  <a href="{% url 'imovel_publico' imovel.slug %}">
+    {% if imovel.imagem_url %}<img src="{{ imovel.imagem_url }}" alt="{{ imovel.titulo }}" loading="lazy">{% else %}<img src="{% static imovel.imagem %}" alt="{{ imovel.titulo }}" loading="lazy">{% endif %}
     <div><h3>{{ imovel.titulo }}</h3><p>R$ {{ imovel.preco }}/mês</p></div>
   </a>
 </article>

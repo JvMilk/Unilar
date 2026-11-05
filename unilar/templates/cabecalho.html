@@ -3,7 +3,7 @@
             <nav class="navbar navbar-expand-lg">
                 <div class="container-fluid">
                     <a class="navbar-brand" href="/inicio/">
-                        <img src="{% static 'imagens/logo.png' %}" alt="UniLar — início" class="logo">
+                        <img src="{% static 'imagens/logo.png' %}" alt="{{ configuracao_site.nome_site|default:'UniLar' }} — início" class="logo">
                     </a>
 
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -32,6 +32,9 @@
                         </ul>
 
                         <div class="acoes-menu">
+                            {% if user.is_staff %}
+                            <a href="{% url 'admin_dashboard' %}" class="btn botao-menu"><i class="bi bi-speedometer2" aria-hidden="true"></i> Administração</a>
+                            {% endif %}
                             <a href="/favoritos/" class="favoritos" aria-label="Meus favoritos">
                                 <i class="bi bi-heart" aria-hidden="true"></i>
                             </a>

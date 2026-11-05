@@ -1,0 +1,35 @@
+{% extends "unilar_admin/base.html" %}
+{% block title %}Dúvidas e mensagens{% endblock %}
+{% block breadcrumb %}Dúvidas e mensagens{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">ATENDIMENTO</p><h1>Dúvidas e mensagens</h1><p>Consulte as mensagens recebidas e acompanhe as respostas.</p></div></div>
+<section class="panel-card inbox">
+  <aside class="inbox-list">
+    <form class="inbox-filter" method="get">
+      <label class="search-control"><i class="bi bi-search"></i><input name="q" type="search" value="{{ q }}" placeholder="Buscar mensagem" aria-label="Buscar mensagem"></label>
+      <select name="status" aria-label="Filtrar por status"><option value="">Todas as mensagens</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if status_selecionado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      <button class="button button-light">Filtrar</button>
+    </form>
+    <div class="inbox-items">
+      {% for duvida in duvidas %}<a class="inbox-item {% if selecionada.pk == duvida.pk %}selected{% endif %}" href="{% url 'admin_mensagens_detalhe' duvida.pk %}">
+        <span class="inbox-item-top"><strong>{{ duvida.nome }}</strong><time>{{ duvida.criado_em|date:"d/m/Y" }}</time></span>
+        <span class="inbox-email">{{ duvida.email }}</span><span class="inbox-preview">{{ duvida.mensagem|truncatechars:85 }}</span>
+        <span class="status status-{{ duvida.status }}">{{ duvida.get_status_display }}</span>
+      </a>{% empty %}<p class="empty-row">Nenhuma mensagem encontrada.</p>{% endfor %}
+    </div>
+  </aside>
+  <div class="inbox-detail">
+    {% if selecionada %}
+    <div class="message-heading"><div><span class="status status-{{ selecionada.status }}">{{ selecionada.get_status_display }}</span><h2>{{ selecionada.nome }}</h2><a href="mailto:{{ selecionada.email }}">{{ selecionada.email }}</a></div><time>{{ selecionada.criado_em|date:"d/m/Y H:i" }}</time></div>
+    <div class="message-meta"><span><i class="bi bi-house"></i> Imóvel: {{ selecionada.imovel }}</span></div>
+    <article class="message-body">{{ selecionada.mensagem|linebreaksbr }}</article>
+    {% if selecionada.resposta %}<div class="saved-reply"><strong>Resposta salva{% if selecionada.respondido_em %} · {{ selecionada.respondido_em|date:"d/m/Y H:i" }}{% endif %}</strong><p>{{ selecionada.resposta|linebreaksbr }}</p></div>{% endif %}
+    <form class="reply-form" method="post" action="{% url 'admin_mensagem_responder' selecionada.pk %}">{% csrf_token %}
+      <label for="resposta"><strong>Responder ao visitante</strong><textarea id="resposta" name="resposta" rows="5" placeholder="Escreva sua resposta...">{% if selecionada.status == 'pendente' %}{{ selecionada.resposta }}{% endif %}</textarea></label>
+      <div class="form-actions"><button class="button button-primary" name="acao" value="responder"><i class="bi bi-send"></i> Enviar resposta</button><button class="button button-light" name="acao" value="pendente">Marcar pendente</button></div>
+    </form>
+    <form method="post" action="{% url 'admin_mensagem_responder' selecionada.pk %}" data-confirm="Excluir esta mensagem?">{% csrf_token %}<button class="button button-danger" name="acao" value="excluir"><i class="bi bi-trash3"></i> Excluir mensagem</button></form>
+    {% else %}<div class="empty-inbox"><i class="bi bi-chat-square-text"></i><h2>Selecione uma mensagem</h2><p>As mensagens recebidas aparecerão aqui.</p></div>{% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "unilar_admin/base.html" %}
+{% block title %}Relatórios{% endblock %}
+{% block header_title %}Relatórios{% endblock %}
+{% block header_subtitle %}Indicadores reais da atividade do UniLar{% endblock %}
+{% block breadcrumb %}Relatórios{% endblock %}
+{% block content %}
+<div class="page-heading report-heading">
+  <div><p class="eyebrow">DADOS DA PLATAFORMA</p><h2>Relatórios do UniLar</h2><p>Resumo mensal de cadastros, dúvidas e anúncios ativos nos últimos 12 meses.</p></div>
+  <a class="button button-light" href="{% url 'admin_dashboard' %}"><i class="bi bi-arrow-left"></i> Voltar ao painel</a>
+</div>
+<div class="report-stat-grid">
+  <article class="report-stat"><span class="stat-icon blue"><i class="bi bi-buildings"></i></span><span><small>Imóveis cadastrados</small><strong>{{ total_imoveis }}</strong></span></article>
+  <article class="report-stat"><span class="stat-icon green"><i class="bi bi-house-check"></i></span><span><small>Disponíveis agora</small><strong>{{ disponiveis }}</strong></span></article>
+  <article class="report-stat"><span class="stat-icon violet"><i class="bi bi-chat-dots"></i></span><span><small>Dúvidas recebidas</small><strong>{{ total_duvidas }}</strong></span></article>
+  <article class="report-stat"><span class="stat-icon amber"><i class="bi bi-people"></i></span><span><small>Usuários cadastrados</small><strong>{{ total_usuarios }}</strong></span></article>
+</div>
+<section class="panel-card report-table-panel">
+  <div class="panel-heading"><div><h2>Atividade mensal</h2><p>Contagem registrada no banco de dados por mês</p></div><i class="bi bi-calendar3"></i></div>
+  <div class="table-wrap"><table class="admin-table"><thead><tr><th>Mês</th><th>Imóveis cadastrados</th><th>Dúvidas recebidas</th></tr></thead><tbody>
+    {% for linha in relatorio %}<tr><td><strong>{{ linha.mes|date:"F Y" }}</strong></td><td>{{ linha.imoveis }}</td><td>{{ linha.duvidas }}</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

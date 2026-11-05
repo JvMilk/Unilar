@@ -36,9 +36,37 @@ docs/                   documentação (INTEGRACAO.md) e capturas de tela
 
 ## Funcionalidades
 
-Catálogo com filtros por cidade, tipo e preço; favoritos por sessão; detalhes de uma kitnet; contatos e solicitações de visita gravados no banco local e disponíveis no admin.
+Catálogo com filtros por cidade, tipo e preço; favoritos por sessão; detalhes de imóveis; contatos e solicitações de visita gravados no banco. Os imóveis iniciais do catálogo são carregados para o banco pela migração e passam a ser administráveis.
 
-O catálogo usa dados de exemplo. Os outros quatro imóveis ainda não têm páginas completas de detalhes. Autenticação da tela de login, Sobre, Suporte e envio de e-mail estão pendentes. SQLite é utilizado nesta etapa; SQL Server Express 2022 será configurado depois.
+## Painel administrativo
+
+1. Instale as dependências e aplique as migrações:
+
+   ```bash
+   python -m pip install -r requirements.txt
+   python manage.py migrate
+   ```
+
+2. Crie uma conta autorizada pelo sistema de autenticação do Django:
+
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+   Use o mesmo endereço de e-mail como nome de usuário; o login existente recebe o e-mail nesse campo. A conta de superusuário pode acessar `/administracao/`. Não compartilhe credenciais nem as grave no código.
+
+O painel permite administrar anúncios, imóveis e fotos, dúvidas, contas e permissões, além das informações do site. Apenas contas administrativas (`is_staff`) acessam as rotas; a criação e concessão de acesso administrativo são feitas por superusuários. Novas fotos são armazenadas em `MEDIA_ROOT` (por padrão, `media/`); em produção, configure um servidor de mídia persistente e um backend de e-mail SMTP.
+
+As respostas às dúvidas ficam registradas no banco. O envio por e-mail só é tentado quando `EMAIL_HOST` e `DEFAULT_FROM_EMAIL` estão configurados. Use variáveis de ambiente para `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS` e `DEFAULT_FROM_EMAIL`; não coloque senhas no repositório.
+
+Para validar a aplicação:
+
+```bash
+python manage.py check
+python manage.py test unilar
+```
+
+SQLite é utilizado nesta etapa; SQL Server Express 2022 será configurado depois.
 
 ## Testar
 
