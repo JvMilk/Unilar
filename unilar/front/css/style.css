@@ -139,7 +139,10 @@ a {
 }
 
 .apresentacao h1 span {
-    color: #af8aff;
+    color: #531994;
+    text-decoration: underline;
+    text-decoration-thickness: 0.1em;
+    text-underline-offset: 0.15em;
 }
 
 .descricao {
@@ -204,7 +207,7 @@ a {
     position: relative;
 }
 
-.campo > i {
+.campo > svg {
     position: absolute;
     top: 50%;
     left: 18px;
@@ -246,18 +249,57 @@ a {
     font-size: 14px;
 }
 
-.form-check {
-    margin-bottom: 0;
-}
-
-.form-check-input,
-.form-check-label {
+.lembrar-login {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     cursor: pointer;
 }
 
-.form-check-input:checked {
-    border-color: var(--azul);
-    background-color: var(--azul);
+/* Checkbox adaptado de SelfMadeSystem no Uiverse.io. */
+.lembrar-login .checkmark {
+    position: relative;
+    flex: none;
+    width: 1.3em;
+    height: 1.3em;
+    font-size: 20px;
+    border-radius: 0.25em;
+    background: transparent;
+    transition: background-color 0.35s ease-in-out;
+}
+
+.lembrar-login .checkmark::after {
+    content: "";
+    position: absolute;
+    box-sizing: content-box;
+    inset: 0 auto auto 0;
+    width: 1.05em;
+    height: 1.05em;
+    border: 0.1em solid black;
+    border-radius: 0.25em;
+    transform: rotate(0deg);
+    transition: all 0.35s ease-in-out, border-width 0.12s;
+}
+
+.lembrar-login input:checked + .checkmark { background-color: #2196f3; }
+.lembrar-login input:checked + .checkmark::after {
+    left: 0.45em;
+    top: 0.25em;
+    width: 0.25em;
+    height: 0.5em;
+    border-color: transparent white white transparent;
+    border-width: 0 0.15em 0.15em 0;
+    border-radius: 0;
+    transform: rotate(45deg);
+}
+.lembrar-login input:focus-visible + .checkmark {
+    outline: 2px solid #0b76ef;
+    outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .lembrar-login .checkmark,
+    .lembrar-login .checkmark::after { transition: none; }
 }
 
 .opcoes-login a {
@@ -1162,7 +1204,8 @@ body.imovel-aberto { overflow: hidden; }
   border: 0;
   border-radius: 0;
   box-shadow: none;
-}.inicio-unilar .search-field{ min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0; border: 0; background: transparent; }.inicio-unilar .field-icon{ font-size: 24px; color: #334f86; }.inicio-unilar .field-text{ min-width: 0; display: flex; flex-direction: column; width: 100%; gap: 1px; }.inicio-unilar .field-text small{ font-size: 12px; color: #526789; font-weight: 700; }.inicio-unilar .field-text select{ width: 100%; min-height: 40px; padding: 7px 28px 7px 10px; border: 1px solid #aab8ca; border-radius: 7px; outline: 0; appearance: none; background-color: #fff; background-image: linear-gradient(45deg, transparent 50%, #31496f 50%), linear-gradient(135deg, #31496f 50%, transparent 50%); background-position: calc(100% - 10px) 50%, calc(100% - 5px) 50%; background-size: 5px 5px; background-repeat: no-repeat; color: #10285f; font: 600 14px "Nunito Sans", Arial, sans-serif; cursor: pointer; }.inicio-unilar .field-text select:focus-visible{ border-color: #1764e8; box-shadow: 0 0 0 2px #1764e833; }.inicio-unilar .search-button{ display: flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 9px; background: #6935f3; color: white; font: 800 16px "Nunito Sans", Arial, sans-serif; cursor: pointer; min-height: 56px; }.inicio-unilar .search-button span{ position: relative; display: inline-block; width: 15px; height: 15px; border: 2px solid currentColor; border-radius: 50%; }.inicio-unilar .search-button span::after{ position: absolute; right: -5px; bottom: -3px; width: 6px; height: 2px; border-radius: 2px; background: currentColor; content: ""; transform: rotate(45deg); }.inicio-unilar .search-button:hover{ filter: brightness(1.05); }.inicio-unilar .section-wrap{ padding: 58px 3.6% 0; }.inicio-unilar .featured.section-wrap{ padding-top: 20px; }.inicio-unilar .section-heading{ display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 5px; }.inicio-unilar .section-heading h2{ font-size: 30px; line-height: 1.2; font-weight: 900; letter-spacing: 0; }.inicio-unilar .section-heading a,.inicio-unilar .see-all{ color: #1c53c5; font-size: 16px; font-weight: 800; white-space: nowrap; }.inicio-unilar .see-all{ border: 0; background: none; font-family: inherit; cursor: pointer; }.inicio-unilar .section-heading a span{ font-size: 22px; margin-left: 5px; vertical-align: -2px; }.inicio-unilar .property-grid{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(12px, 1.2vw, 20px); }.inicio-unilar .property-card{ overflow: hidden; border: 1px solid #e0e8f3; border-radius: 13px; background: #fff; box-shadow: 0 3px 10px rgba(28, 57, 99, .07); min-width: 0; }.inicio-unilar .property-image{ position: relative; aspect-ratio: 2.5 / 1; overflow: hidden; background: #e8eef7; }.inicio-unilar .property-image img{ width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .25s ease; }.inicio-unilar .property-card:hover .property-image img{ transform: scale(1.035); }.inicio-unilar .tag{ position: absolute; top: 10px; left: 10px; max-width: calc(100% - 60px); padding: 7px 13px; border-radius: 22px; background: rgba(255,255,255,.97); color: #16356f; font-size: 11px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }.inicio-unilar .heart{ position: absolute; right: 10px; top: 8px; display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: white; color: #173b7b; font-size: 27px; line-height: 1; box-shadow: 0 2px 7px #00000015; cursor: pointer; }.inicio-unilar .heart:hover{ color: #5e35ee; }.inicio-unilar .heart[aria-pressed="true"]{ color: #d62957; }.inicio-unilar .property-info{ padding: 8px clamp(10px, 1vw, 16px) 10px; }.inicio-unilar .property-info h3{ font-size: 17px; line-height: 1.3; font-weight: 900; margin-bottom: 5px; }.inicio-unilar .location{ color: #2853a0; display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; }.inicio-unilar .location:first-letter{ font-size: 17px; }.inicio-unilar .price{ margin-top: 6px; color: #143b90; font-size: 21px; font-weight: 900; }.inicio-unilar .price span{ font-size: 14px; font-weight: 800; }.inicio-unilar .details{ margin-top: 6px; display: flex; justify-content: space-between; gap: 5px; color: #45628e; font-size: 14px; align-items: center; }.inicio-unilar .details span{ white-space: nowrap; }.inicio-unilar .details b{ font-weight: 700; font-size: 12px; }.inicio-unilar .why-us{ margin: 10px 2.2% 0; padding: 22px 2.4%; background: #edf4ff; border-radius: 15px 15px 0 0; display: grid; grid-template-columns: minmax(220px, 1.45fr) repeat(4, minmax(0, 1fr)); align-items: center; gap: 18px; }.inicio-unilar .why-intro{ border-right: 1px solid #c8d7ef; padding-right: 16px; }.inicio-unilar .why-intro h2{ font-size: 23px; line-height: 1.2; font-weight: 900; color: #1645a8; }.inicio-unilar .why-intro p{ margin-top: 7px; color: #45618b; font-size: 14px; line-height: 1.4; }.inicio-unilar .benefit{ display: flex; flex-direction: column; align-items: center; text-align: center; }.inicio-unilar .benefit-icon{ display: block; color: #1654d0; font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 5px; }.inicio-unilar .benefit h3{ font-size: 14px; font-weight: 900; color: #153a91; }.inicio-unilar .benefit p{ font-size: 12px; line-height: 1.4; color: #45618b; margin-top: 3px; }.inicio-unilar .bottom-anchor{ height: 1px; }.inicio-unilar .empty-state{ grid-column: 1 / -1; padding: 28px 12px; color: var(--muted); text-align: center; }.inicio-unilar .login-dialog{ width: min(420px, calc(100% - 32px)); margin: auto; padding: 26px; border: 0; border-radius: 14px; color: var(--navy); box-shadow: 0 18px 60px #10285f40; }.inicio-unilar .login-dialog::backdrop{ background: #10285f80; }.inicio-unilar .login-dialog h2{ font-size: 22px; font-weight: 900; }.inicio-unilar .login-dialog p{ margin: 12px 0 22px; color: var(--muted); }
+}.inicio-unilar .search-field{ min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0; border: 0; background: transparent; }.inicio-unilar .field-icon{ font-size: 24px; color: #334f86; }.inicio-unilar .field-text{ min-width: 0; display: flex; flex-direction: column; width: 100%; gap: 1px; }.inicio-unilar .field-text small{ font-size: 12px; color: #526789; font-weight: 700; }.inicio-unilar .field-text select{ width: 100%; min-height: 40px; padding: 7px 28px 7px 10px; border: 1px solid #aab8ca; border-radius: 7px; outline: 0; appearance: none; background-color: #fff; background-image: linear-gradient(45deg, transparent 50%, #31496f 50%), linear-gradient(135deg, #31496f 50%, transparent 50%); background-position: calc(100% - 10px) 50%, calc(100% - 5px) 50%; background-size: 5px 5px; background-repeat: no-repeat; color: #10285f; font: 600 14px "Nunito Sans", Arial, sans-serif; cursor: pointer; }.inicio-unilar .field-text select:focus-visible{ border-color: #1764e8; box-shadow: 0 0 0 2px #1764e833; }.inicio-unilar .search-button{ display: flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 9px; background: #6935f3; color: white; font: 800 16px "Nunito Sans", Arial, sans-serif; cursor: pointer; min-height: 56px; }.inicio-unilar .search-button span{ position: relative; display: inline-block; width: 15px; height: 15px; border: 2px solid currentColor; border-radius: 50%; }.inicio-unilar .search-button span::after{ position: absolute; right: -5px; bottom: -3px; width: 6px; height: 2px; border-radius: 2px; background: currentColor; content: ""; transform: rotate(45deg); }.inicio-unilar .search-button:hover{ filter: brightness(1.05); }.inicio-unilar .section-wrap{ padding: 58px 3.6% 0; }.inicio-unilar .featured.section-wrap{ padding-top: 20px; }.inicio-unilar .section-heading{ display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 5px; }.inicio-unilar .section-heading h2{ font-size: 30px; line-height: 1.2; font-weight: 900; letter-spacing: 0; }.inicio-unilar .section-heading a,.inicio-unilar .see-all{ color: #1c53c5; font-size: 16px; font-weight: 800; white-space: nowrap; }.inicio-unilar .see-all{ border: 0; background: none; font-family: inherit; cursor: pointer; }.inicio-unilar .section-heading a span{ font-size: 22px; margin-left: 5px; vertical-align: -2px; }.inicio-unilar .property-grid{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(12px, 1.2vw, 20px); }.inicio-unilar .property-card{ overflow: hidden; border: 1px solid #e0e8f3; border-radius: 13px; background: #fff; box-shadow: 0 3px 10px rgba(28, 57, 99, .07); min-width: 0; }.inicio-unilar .property-image{ position: relative; aspect-ratio: 2.5 / 1; overflow: hidden; background: #e8eef7; }.inicio-unilar .property-image img{ width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .25s ease; }.inicio-unilar .property-card:hover .property-image img{ transform: scale(1.035); }.inicio-unilar .tag{ position: absolute; top: 10px; left: 10px; max-width: calc(100% - 60px); padding: 7px 13px; border-radius: 22px; background: rgba(255,255,255,.97); color: #16356f; font-size: 11px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }.inicio-unilar .heart{ position: absolute; right: 10px; top: 8px; display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: white; color: #173b7b; font-size: 27px; line-height: 1; box-shadow: 0 2px 7px #00000015; cursor: pointer; }.inicio-unilar .heart:hover{ color: #5e35ee; }.inicio-unilar .heart[aria-pressed="true"]{ color: #d62957; }.inicio-unilar .property-info{ padding: 8px clamp(10px, 1vw, 16px) 10px; }.inicio-unilar .property-info h3{ font-size: 17px; line-height: 1.3; font-weight: 900; margin-bottom: 5px; }.inicio-unilar .location{ color: #2853a0; display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; }.inicio-unilar .location:first-letter{ font-size: 17px; }.inicio-unilar .price{ margin-top: 6px; color: #143b90; font-size: 21px; font-weight: 900; }.inicio-unilar .price span{ font-size: 14px; font-weight: 800; }.inicio-unilar .details{ margin-top: 6px; display: flex; justify-content: space-between; gap: 5px; color: #45628e; font-size: 14px; align-items: center; }.inicio-unilar .details span{ white-space: nowrap; }.inicio-unilar .details b{ font-weight: 700; font-size: 12px; }.inicio-unilar .why-us{ margin: 10px 2.2% 0; padding: 22px 2.4%; background: #edf4ff; border-radius: 15px 15px 0 0; display: grid; grid-template-columns: minmax(220px, 1.45fr) repeat(4, minmax(0, 1fr)); align-items: center; gap: 18px; }.inicio-unilar .why-intro{ border-right: 1px solid #c8d7ef; padding-right: 16px; }.inicio-unilar .why-intro h2{ font-size: 23px; line-height: 1.2; font-weight: 900; color: #1645a8; }.inicio-unilar .why-intro p{ margin-top: 7px; color: #45618b; font-size: 14px; line-height: 1.4; }.inicio-unilar .benefit{ display: grid; grid-template-rows: 36px 2.6em auto; justify-items: center; align-content: start; gap: 8px; align-self: stretch; text-align: center; min-width: 0; }.inicio-unilar .benefit-icon{ display: grid; place-items: center; width: 36px; height: 36px; color: #1654d0; line-height: 1; }
+.inicio-unilar .benefit-icon svg{ display: block; width: 32px; height: 32px; }.inicio-unilar .benefit h3{ display: flex; align-items: center; justify-content: center; margin: 0; font-size: 14px; line-height: 1.3; font-weight: 900; color: #153a91; }.inicio-unilar .benefit p{ font-size: 12px; line-height: 1.4; color: #45618b; margin: 0; }.inicio-unilar .bottom-anchor{ height: 1px; }.inicio-unilar .empty-state{ grid-column: 1 / -1; padding: 28px 12px; color: var(--muted); text-align: center; }.inicio-unilar .login-dialog{ width: min(420px, calc(100% - 32px)); margin: auto; padding: 26px; border: 0; border-radius: 14px; color: var(--navy); box-shadow: 0 18px 60px #10285f40; }.inicio-unilar .login-dialog::backdrop{ background: #10285f80; }.inicio-unilar .login-dialog h2{ font-size: 22px; font-weight: 900; }.inicio-unilar .login-dialog p{ margin: 12px 0 22px; color: var(--muted); }
 
 @media (max-width: 1050px) {.inicio-unilar .topbar{ padding-inline: 3%; gap: 18px; }.inicio-unilar .topbar{ min-height: 132px; }.inicio-unilar .brand{ width: 230px; height: 77px; flex-basis: 230px; }.inicio-unilar .menu{ gap: 24px; }.inicio-unilar .top-actions{ gap: 15px; }.inicio-unilar .top-actions .profile-top{ flex-basis: 42px; padding: 0; }.inicio-unilar .why-us{ grid-template-columns: repeat(4, 1fr); }.inicio-unilar .why-intro{ grid-column: 1 / -1; border-right: 0; border-bottom: 1px solid #c8d7ef; padding: 0 0 12px; }}
 @media (max-width: 850px) {.inicio-unilar .hero-photo{ height: auto; }.inicio-unilar .search-panel{ grid-template-columns: repeat(2, minmax(0, 1fr)); }.inicio-unilar .property-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }.inicio-unilar .why-us{ grid-template-columns: repeat(2, minmax(0, 1fr)); }.inicio-unilar .why-intro{ grid-column: 1 / -1; }}
@@ -1171,3 +1214,198 @@ body.imovel-aberto { overflow: hidden; }
 
 /* Cartão da página de favoritos */
 .cartao-favorito { max-width: 420px; }
+
+/* Cadastro */
+.cadastro { min-height: calc(100vh - 86px); display:grid; grid-template-columns: 1fr minmax(430px, 44%); align-items:center; gap:5%; padding:3.5% 3% 3.5% 7%; background:linear-gradient(90deg,rgba(3,12,34,.86),rgba(6,33,83,.52) 57%,rgba(70,126,196,.18)),url("imagens/universidade.jpg") center / cover; }
+.cad-apresentacao { color:white; max-width:590px; }
+.cad-chamada,.cad-passo { font-size:.85rem; font-weight:700; letter-spacing:.18em; color:#74ceff; }
+.cad-apresentacao h1 { font-size:clamp(2.5rem,4.2vw,4.4rem); line-height:1.04; font-weight:800; letter-spacing:-.04em; margin-bottom:2rem; }
+.cad-apresentacao em { color:#2994ff; text-decoration:underline; text-underline-offset:.18em; font-style:normal; }
+.cad-apresentacao > p:not(.cad-chamada) { max-width:350px; }
+.cad-apresentacao ul { list-style:none; margin:2.6rem 0; padding:0; }
+.cad-apresentacao li { display:flex; gap:1rem; align-items:center; max-width:230px; margin:1.1rem 0; }
+.cad-apresentacao li i { color:#67c5ff; font-size:1.8rem; }
+.cad-assinatura { font:italic 1.8rem "Segoe Print",cursive; color:#79ceff; }
+.cad-cartao { background:#f8f9fc; color:#121622; border-radius:22px; padding:clamp(24px,3.4vw,55px); box-shadow:0 10px 32px #00133129; }
+.cad-passo { color:#1252c8; margin-bottom:.6rem; }
+.cad-cartao h2 { font-size:clamp(2rem,3vw,2.8rem); font-weight:800; margin:0; }
+.cad-progresso { display:flex; justify-content:space-between; position:relative; list-style:none; padding:0; margin:1.5rem 0; }
+.cad-progresso::before { content:""; position:absolute; height:1px; background:#c7ced9; left:10%; right:10%; top:14px; }
+.cad-progresso li { position:relative; text-align:center; font-size:.8rem; }
+.cad-progresso b { display:grid; place-items:center; background:#f8f9fc; border:1px solid #aaa; border-radius:50%; width:29px; height:29px; margin:0 auto 6px; }
+.cad-progresso [aria-current] { color:#064aca; font-weight:bold; }
+.cad-progresso [aria-current] b { color:white; background:#064aca; border-color:#064aca; }
+.cad-dupla { display:grid; grid-template-columns:1.35fr 1fr; gap:14px; }
+.cad-campo { display:block; margin:.6rem 0; font-weight:600; }
+.cad-campo span { display:flex; align-items:center; border:1px solid #c9ced8; border-radius:9px; padding:0 .8rem; gap:.6rem; margin-top:.2rem; }
+.cad-campo span:focus-within { outline:2px solid #1764e8; }
+.cad-campo input { min-width:0; width:100%; height:44px; border:0; outline:none; background:transparent; font-weight:400; }
+.cad-olho,.cad-voltar { background:transparent; border:0; color:#27519b; }
+.cad-aceite { display:flex; gap:.65rem; align-items:center; font-size:.82rem; margin:1.2rem 0; }
+.cad-enviar { width:100%; border:0; border-radius:14px; padding:.9rem; font-weight:700; color:white; background:linear-gradient(100deg,#0458e9,#5b31db); }
+.cad-voltar { margin-bottom:.75rem; }
+.cad-entrar { text-align:center; font-size:.9rem; margin:1.4rem 0 0; }
+@media(max-width:850px) { .cadastro { grid-template-columns:1fr; gap:1.5rem; padding:24px 5%; } .cad-apresentacao ul,.cad-assinatura { display:none; } }
+@media(max-width:540px) { .cad-dupla { grid-template-columns:1fr; gap:0; } .cad-cartao { padding:22px 16px; } }
+
+/* Catálogo de imóveis — paleta e tipografia do projeto */
+.lista-unilar.inicio-unilar {
+    padding: 32px clamp(18px, 3.6vw, 58px) 48px;
+    font-family: inherit;
+    color: var(--azul-escuro);
+    background: #f4f8ff;
+}
+.lista-intro { margin-bottom: 24px; }
+.lista-intro h1 { margin: 0 0 10px; font-size: clamp(26px, 3vw, 36px); font-weight: 800; letter-spacing: -.7px; }
+.lista-intro p { color: var(--texto-suave); margin: 0; font-size: 15px; }
+.lista-intro .lista-sobretitulo { color: var(--azul); font-size: 12px; font-weight: 700; letter-spacing: 2px; margin-bottom: 10px; }
+.lista-filtros {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    padding: 24px;
+    margin-bottom: 28px;
+    background: white;
+    border: 1px solid var(--borda);
+    border-radius: 15px;
+    box-shadow: 0 4px 18px rgb(30 85 160 / 5%);
+}
+.lista-filtros label, .lista-resultados label, .interesse-demo label { display: grid; gap: 8px; font-size: 13px; font-weight: 600; color: var(--texto-suave); min-width: 0; }
+.lista-filtros input, .lista-filtros select, .lista-resultados select, .interesse-demo input {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--borda);
+    border-radius: 9px;
+    background: white;
+    font: inherit;
+    font-size: 14px;
+    color: var(--azul-escuro);
+}
+.lista-unilar :is(input, select, button, a, summary):focus-visible { outline: 3px solid var(--azul); outline-offset: 3px; }
+.lista-acoes { display: flex; align-items: center; gap: 18px; grid-column: 1 / -1; }
+.lista-acoes a, .lista-regioes .btn-link { font-size: 13px; font-weight: 600; color: var(--azul); text-decoration: none; }
+.lista-botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border: 0;
+    border-radius: 9px;
+    color: white;
+    background: linear-gradient(100deg, #0750ff, #293aff, #8035ff);
+    font: inherit;
+    font-weight: 700;
+}
+.lista-botao:hover { filter: brightness(1.08); }
+.lista-colunas { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 24px; align-items: start; }
+.lista-resultados { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+.lista-resultados h2 { flex: 1; font-size: 21px; font-weight: 800; margin: 0; }
+.lista-resultados label { gap: 4px; font-size: 12px; }
+.lista-resultados select { height: 38px; }
+.lista-ordenar { border: 1px solid var(--borda); border-radius: 9px; background: white; color: var(--azul); padding: 9px 12px; font-size: 13px; align-self: end; }
+.lista-unilar .property-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.lista-unilar .property-image { aspect-ratio: 16 / 9; }
+.lista-unilar .property-info { padding: 16px; }
+.lista-unilar .property-info h3 { color: var(--azul-escuro); font-size: 18px; font-weight: 700; }
+.lista-unilar .location, .lista-unilar .details { color: var(--texto-suave); font-size: 13px; font-weight: 400; }
+.lista-unilar .location { min-height: 36px; }
+.lista-unilar .price { color: var(--azul); font-size: 23px; font-weight: 700; }
+.lista-unilar .price span { color: var(--texto-suave); font-size: 13px; font-weight: 400; margin-left: 4px; }
+.lista-unilar .property-info > a, .lista-unilar .anuncio-detalhes summary { color: var(--azul); font-size: 14px; font-weight: 600; text-decoration: none; }
+.lista-regioes { padding: 20px; background: white; border: 1px solid var(--borda); border-radius: 15px; }
+.lista-regioes h2 { font-size: 20px; font-weight: 800; }
+.lista-regioes p { color: var(--texto-suave); font-size: 13px; line-height: 1.6; }
+.lista-mapa { display: grid; gap: 18px; min-height: 190px; padding: 20px; border-radius: 10px; background: linear-gradient(#ffffffaa,#ffffffaa), url('imagens/mapa.png') center/cover; }
+.lista-mapa button { width: fit-content; border: 1px solid var(--azul); border-radius: 20px; padding: 6px 14px; color: var(--azul); background: white; font-size: 13px; }
+.lista-mapa button:nth-child(2) { justify-self: end; }
+.lista-mapa button[aria-pressed="true"], .lista-mapa button:hover { background: var(--azul); color: white; }
+.lista-dica { margin-top: 18px; padding: 16px; background: #eef2ff; border-radius: 10px; }
+.lista-dica h3 { font-size: 16px; color: var(--azul-escuro); font-weight: 700; }
+.lista-dica p { margin: 0; }
+.anuncio-detalhes summary { color: var(--azul); cursor: pointer; }
+.interesse-demo { display: grid; gap: 10px; padding-top: 10px; }
+@media (max-width: 1100px) {
+    .lista-colunas { grid-template-columns: 1fr; }
+    .lista-regioes { max-width: 100%; }
+    .lista-mapa { grid-template-columns: repeat(3, 1fr); min-height: 120px; align-items: center; }
+    .lista-mapa button:nth-child(2) { justify-self: center; }
+}
+@media (max-width: 700px) {
+    .lista-filtros { grid-template-columns: 1fr 1fr; padding: 18px; gap: 14px; }
+    .lista-busca { grid-column: 1 / -1; }
+    .lista-unilar .property-grid { grid-template-columns: 1fr; }
+    .lista-resultados h2 { flex-basis: 100%; }
+}
+@media (max-width: 420px) {
+    .lista-filtros { grid-template-columns: 1fr; }
+    .lista-acoes { flex-direction: column; align-items: stretch; }
+    .lista-mapa { grid-template-columns: 1fr; }
+}
+
+/* Painel pessoal */
+.painel-page { margin: 0; background: #f6f9ff; color: #142c88; font-family: "Nunito Sans", Arial, sans-serif; }
+.painel-page header { background: white; border-bottom: 1px solid #d7deec; }
+.painel-page .navbar { min-height: 72px; padding: 8px 20px; }
+.painel-page .navbar .logo { width: 155px; height: auto; }
+.painel-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: calc(100vh - 85px); }
+.painel-sidebar { background: white; border-right: 1px solid #d7deec; padding: 25px 12px; display: flex; flex-direction: column; }
+.painel-identidade { display: flex; gap: 12px; align-items: center; padding: 0 8px 30px; min-width: 0; }
+.painel-identidade div { min-width: 0; }
+.painel-identidade strong, .painel-identidade span, .painel-identidade small { display: block; overflow-wrap: anywhere; }
+.painel-identidade strong { font-size: 12px; }
+.painel-identidade span { font-size: 11px; }
+.painel-identidade small { font-size: 10px; }
+.painel-identidade .painel-avatar { background: #d8e7ff; color: #1652e8; width: 52px; height: 52px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 25px; font-weight: 800; }
+.painel-sidebar nav { display: grid; gap: 8px; }
+.painel-sidebar nav a, .painel-sair button { display: flex; align-items: center; gap: 12px; padding: 9px 12px; color: #2445b8; text-decoration: none; font-size: 14px; border-radius: 7px; }
+.painel-sidebar nav a.ativo { background: #dce7f6; }
+.painel-sidebar i { font-size: 23px; color: #0750ff; }
+.painel-sair { margin: auto 12px 0; padding-top: 35px; }
+.painel-sair button { border: 0; border-top: 1px solid #d7deec; background: white; border-radius: 0; width: 100%; }
+.painel-main { padding: 25px clamp(18px, 3vw, 45px); min-width: 0; }
+.painel-main h1, .painel-main h2 { color: #152b8e; font-size: 23px; font-weight: 800; margin: 0; }
+.painel-titulo { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 12px; }
+.painel-main a { text-decoration: none; }
+.painel-titulo a { font-size: 13px; color: #0750ff; }
+.painel-cartao { background: white; border: 1px solid #e0e7f4; border-radius: 9px; padding: 22px; margin-bottom: 26px; box-shadow: 0 2px 2px #19315818; }
+.painel-dados { display: grid; grid-template-columns: 1fr 1fr; }
+.painel-dados dl { margin: 0; padding: 0 12px; min-width: 0; }
+.painel-dados dl + dl { border-left: 1px solid #cbd6ed; padding-left: 35px; }
+.painel-dados dt { font-size: 13px; font-weight: 400; color: #263a77; }
+.painel-dados dd { font-size: 14px; margin-bottom: 22px; overflow-wrap: anywhere; }
+.painel-dados dd:last-child { margin-bottom: 0; }
+.painel-imoveis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin: 12px 0 20px; }
+.painel-imovel { background: white; border: 1px solid #e0e7f4; border-radius: 8px; overflow: hidden; }
+.painel-imovel img { width: 100%; height: 110px; object-fit: cover; display: block; }
+.painel-imovel div { padding: 8px; color: #152b8e; }
+.painel-imovel h3 { font-size: 12px; margin: 0 0 3px; font-weight: 600; }
+.painel-imovel p { font-size: 11px; margin: 0; font-weight: 700; }
+.painel-vazio { grid-column: 1 / -1; padding: 20px; background: white; border-radius: 9px; }
+.painel-ajuda { display: flex; align-items: center; gap: 18px; background: #e1e6fc; border-radius: 9px; padding: 12px 18px; margin-top: 15px; }
+.painel-ajuda > i { font-size: 42px; color: #2757ff; }
+.painel-ajuda h2 { font-size: 19px; }
+.painel-ajuda p { font-size: 12px; margin: 3px 0 0; }
+.painel-ajuda a { margin-left: auto; background: linear-gradient(100deg,#0750ff,#293aff,#8035ff); color: white; padding: 11px 22px; border-radius: 8px; white-space: nowrap; font-size: 13px; }
+.painel-editar p { display: grid; gap: 6px; }
+.painel-editar input { border: 1px solid #cbd6ed; padding: 9px; border-radius: 6px; width: 100%; }
+.painel-secao[hidden] { display: none; }
+@media (max-width: 1050px) {
+ .painel-layout { grid-template-columns: 210px minmax(0, 1fr); }
+ .painel-imoveis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+ .painel-ajuda { flex-wrap: wrap; }
+}
+@media (max-width: 650px) {
+ .painel-layout { grid-template-columns: 1fr; }
+ .painel-sidebar { border-right: 0; border-bottom: 1px solid #d7deec; padding: 16px; }
+ .painel-identidade { padding-bottom: 15px; }
+ .painel-sidebar nav { grid-template-columns: 1fr 1fr; }
+ .painel-sidebar nav a { font-size: 12px; padding: 6px; gap: 7px; }
+ .painel-sair { margin: 10px 0 0; padding: 0; }
+ .painel-dados { grid-template-columns: 1fr; gap: 20px; }
+ .painel-dados dl + dl { border: 0; border-top: 1px solid #cbd6ed; padding: 20px 12px 0; }
+ .painel-ajuda a { margin: 0; }
+ .painel-titulo { flex-wrap: wrap; }
+}

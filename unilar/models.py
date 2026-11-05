@@ -32,3 +32,18 @@ class SolicitacaoVisita(models.Model):
 
     def __str__(self):
         return f'{self.nome} — {self.data:%d/%m/%Y} {self.horario:%H:%M}'
+
+
+class PerfilCadastro(models.Model):
+    usuario = models.OneToOneField('auth.User', on_delete=models.CASCADE)
+    nome = models.CharField(max_length=150)
+    cpf = models.CharField(max_length=11, unique=True)
+    endereco = models.CharField(max_length=200)
+    cidade = models.CharField(max_length=100)
+
+
+class DadosPainel(models.Model):
+    usuario = models.OneToOneField('auth.User', on_delete=models.CASCADE)
+    telefone = models.CharField(max_length=25, blank=True)
+    curso = models.CharField(max_length=150, blank=True)
+    universidade = models.CharField(max_length=150, blank=True)

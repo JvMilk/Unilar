@@ -4,30 +4,76 @@ from django.views.decorators.http import require_POST
 
 from .forms import ContatoImovelForm, SolicitacaoVisitaForm
 from .catalogo import IMOVEIS
+from .forms import CadastroForm
+from .models import PerfilCadastro
+from django.contrib import messages
+from django.contrib.auth import authenticate, get_user_model, login as entrar
+from django.db import IntegrityError, transaction
+from django.conf import settings
 from django.http import Http404
 
 
 IMOVEL = 'kitnet-no-centro'
 
 def login(request):
-    return render(request, 'login.html')
+    if request.method == 'POST':
+        usuario = authenticate(request, username=request.POST.get('email', '').strip().lower(),
+                               password=request.POST.get('senha', ''))
+        if usuario is not None:
+            entrar(request, usuario)
+            request.session.set_expiry(None if request.POST.get('lembrar') else 0)
+            return redirect('inicio')
+        messages.error(request, 'E-mail ou senha incorretos.')
+    return render(request, 'login.html', {'google_login_ativo': settings.GOOGLE_LOGIN_ATIVO})
+
+
+def cadastro(request):
+    form = CadastroForm(request.POST if request.method == 'POST' else None)
+    if request.method == 'POST' and form.is_valid():
+        dados = form.cleaned_data
+        try:
+            with transaction.atomic():
+                usuario = get_user_model().objects.create_user(
+                    username=dados['email'], email=dados['email'], password=dados['senha'])
+                PerfilCadastro.objects.create(usuario=usuario, nome=dados['nome'], cpf=dados['cpf'],
+                                              endereco=dados['endereco'], cidade=dados['cidade'])
+        except IntegrityError:
+            form.add_error(None, 'Já existe um cadastro com este e-mail ou CPF.')
+        else:
+            messages.success(request, 'Conta criada! Entre com seu e-mail e senha.')
+            return redirect('login')
+    return render(request, 'cadastro.html', {'form': form})
 
 
 def imoveis(request):
-    return catalogo(request)
+    return catalogo(request, template="lista_imoveis.html")
 
 
 def inicio(request):
     return catalogo(request, titulo='Imóveis em destaque')
 
 
-def catalogo(request, titulo='Imóveis', somente_favoritos=False):
+def catalogo(request, titulo='Imóveis', somente_favoritos=False, template='inicio.html'):
     cidade = request.GET.get('cidade', '')
     tipo = request.GET.get('tipo', '')
     preco = request.GET.get('preco', '')
     salvos = request.session.get('favoritos', [])
+    busca = request.GET.get('q', '').strip()
+    bairro = request.GET.get('bairro', '')
+    ordenar = request.GET.get('ordem', '')
+    limite = request.GET.get('maximo', '')
+    tetos = ('1200', '1800', '2500', '3500')
+    bairros = ('Centro', 'Jardim', 'Planalto')
     resultado = []
     for item in IMOVEIS:
+        if titulo == 'Imóveis em destaque' and 'etiqueta' in item:
+            continue
+        if bairro and bairro != item.get('bairro'):
+            continue
+        if busca.casefold() not in ' '.join(item.get(k, '') for k in ('titulo', 'cidade', 'bairro', 'tipo')).casefold():
+            continue
+        if limite in tetos and item['preco'] > int(limite):
+            continue
         if cidade and item['cidade'] != cidade:
             continue
         if tipo and item['tipo'] != tipo and not (tipo == 'casa' and item['tipo'].startswith('casa')):
@@ -40,7 +86,11 @@ def catalogo(request, titulo='Imóveis', somente_favoritos=False):
         if somente_favoritos and item['slug'] not in salvos:
             continue
         resultado.append({**item, 'favorito': item['slug'] in salvos})
-    return render(request, 'inicio.html', {
+    if ordenar in ('low', 'high'):
+        resultado.sort(key=lambda item: item['preco'], reverse=ordenar == 'high')
+    return render(request, template, {
+        'q': busca, 'bairro': bairro, 'bairros': bairros, 'ordem': ordenar,
+        'maximo': limite, 'tetos': tetos,
         'titulo': titulo, 'imoveis': resultado, 'cidade': cidade,
         'tipo': tipo, 'preco': preco,
         'favorito': IMOVEL in salvos,
@@ -61,6 +111,9 @@ def favoritar_catalogo(request, slug):
 
 
 def detalhe_imovel(request):
+    visitados = request.session.get('visitados', [])
+    if IMOVEL not in visitados:
+        request.session['visitados'] = visitados + [IMOVEL]
     return render(request, 'imovel.html', {
         'favorito': IMOVEL in request.session.get('favoritos', []),
     })
@@ -104,3 +157,45 @@ def solicitar_visita(request):
     return JsonResponse({'mensagem': 'Pedido de visita registrado para '
                          f'{visita.data:%d/%m/%Y}, às {visita.horario:%H:%M}. '
                          'A visita depende de confirmação do proprietário.'}, status=201)
+
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from .models import DadosPainel
+from .forms import PerfilPainelForm
+
+
+@login_required(login_url='login')
+def painel(request):
+    perfil = PerfilCadastro.objects.filter(usuario=request.user).first()
+    dados = DadosPainel.objects.filter(usuario=request.user).first()
+    nome = (perfil.nome if perfil else request.user.get_full_name()) or request.user.username
+    form = PerfilPainelForm(request.POST if request.method == 'POST' else None,
+                           instance=dados, initial={'nome': nome})
+    if request.method == 'POST' and form.is_valid():
+        with transaction.atomic():
+            dados = form.save(commit=False)
+            dados.usuario = request.user
+            dados.save()
+            request.user.first_name = form.cleaned_data['nome']
+            request.user.last_name = ''
+            request.user.save(update_fields=['first_name', 'last_name'])
+            if perfil:
+                perfil.nome = form.cleaned_data['nome']
+                perfil.save(update_fields=['nome'])
+        messages.success(request, 'Perfil atualizado.')
+        return redirect('painel')
+    salvos = request.session.get('favoritos', [])
+    visitados = request.session.get('visitados', [])
+    return render(request, 'painel.html', {
+        'nome': nome, 'dados': dados, 'form': form,
+        'editando': request.method == 'POST' or request.GET.get('editar') == '1',
+        'salvos': [item for item in IMOVEIS if item['slug'] in salvos],
+        'visitados': [item for item in IMOVEIS if item['slug'] in visitados],
+    })
+
+
+@require_POST
+def sair(request):
+    logout(request)
+    return redirect('inicio')

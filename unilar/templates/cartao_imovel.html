@@ -1,0 +1,18 @@
+{% load static %}
+<article class="property-card">
+<div class="property-image"><img src="{% static imovel.imagem %}" alt="{{ imovel.titulo }}"><span class="tag">{{ imovel.etiqueta|default:imovel.tipo }}</span>
+<form method="post" action="{% url 'favoritar_catalogo' imovel.slug %}">{% csrf_token %}
+<button class="heart" type="submit" aria-label="Alternar favorito: {{ imovel.titulo }}" aria-pressed="{{ imovel.favorito|yesno:'true,false' }}">{{ imovel.favorito|yesno:'♥,♡' }}</button></form></div>
+<div class="property-info"><h3>{{ imovel.titulo }}</h3><p class="location">{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</p><p class="price">R$ {{ imovel.preco }}<span>/mês</span></p><p class="details">{{ imovel.detalhes }}</p>
+{% if imovel.slug == 'kitnet-no-centro' %}<a href="{% url 'detalhe_imovel' %}">Ver detalhes →</a>{% else %}<details class="anuncio-detalhes">
+  <summary>Ver detalhes</summary>
+  <p>{{ imovel.descricao|default:imovel.detalhes }}</p>
+  <details><summary>Tenho interesse</summary>
+    <form class="interesse-demo">
+      <label>Seu nome <input required autocomplete="name"></label>
+      <label>Seu telefone <input required type="tel" autocomplete="tel"></label>
+      <button class="btn btn-primary">Enviar interesse</button>
+      <small role="status">Formulário demonstrativo. O contato não será enviado.</small>
+    </form>
+  </details>
+</details>{% endif %}</div></article>
