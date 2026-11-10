@@ -5,7 +5,7 @@
 <title>Crie sua conta | {{ configuracao_site.nome_site|default:"UniLar" }}</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-<link href="{% static 'style.css' %}" rel="stylesheet"></head><body>
+<link href="{% static 'css/style.css' %}?v=20261110c" rel="stylesheet"></head><body>
 {% include 'cabecalho.html' %}
 <main class="cadastro"><section class="cad-apresentacao">
 <p class="cad-chamada">COMECE SUA JORNADA</p>
@@ -25,8 +25,8 @@
 <label class="cad-campo">Nome completo *<span><i class="bi bi-person" aria-hidden="true"></i><input name="nome" type="text" placeholder="Digite seu nome completo" value="{{ form.nome.value|default_if_none:'' }}" autocomplete="name" maxlength="150" required></span></label>
 <label class="cad-campo">CPF *<span><i class="bi bi-person-vcard" aria-hidden="true"></i><input name="cpf" type="text" placeholder="000.000.000-00" value="{{ form.cpf.value|default_if_none:'' }}" inputmode="numeric" maxlength="14" required></span></label></div>
 <label class="cad-campo">E-mail *<span><i class="bi bi-envelope" aria-hidden="true"></i><input name="email" type="email" placeholder="seu@email.com" value="{{ form.email.value|default_if_none:'' }}" autocomplete="email" maxlength="150" required></span></label>
-<label class="cad-campo">Senha *<span><i class="bi bi-lock" aria-hidden="true"></i><input name="senha" type="password" placeholder="Crie uma senha segura"  autocomplete="new-password" required><button type="button" class="cad-olho" aria-label="Mostrar senha"><i class="bi bi-eye-slash"></i></button></span></label>
-<label class="cad-campo">Confirmar senha *<span><i class="bi bi-lock" aria-hidden="true"></i><input name="confirmar" type="password" placeholder="Digite a senha novamente"  autocomplete="new-password" required><button type="button" class="cad-olho" aria-label="Mostrar senha"><i class="bi bi-eye-slash"></i></button></span></label>
+<label class="cad-campo">Senha *<span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16" aria-hidden="true" style="flex-shrink:0"><path fill-rule="evenodd" d="M8 0a4 4 0 0 1 4 4v2.05a2.5 2.5 0 0 1 2 2.45v5a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 2 13.5v-5a2.5 2.5 0 0 1 2-2.45V4a4 4 0 0 1 4-4M4.5 7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7zM8 1a3 3 0 0 0-3 3v2h6V4a3 3 0 0 0-3-3"/></svg><input name="senha" type="password" placeholder="Crie uma senha segura"  autocomplete="new-password" required><button type="button" class="cad-olho" aria-label="Mostrar senha"><i class="bi bi-eye-slash"></i></button></span></label>
+<label class="cad-campo">Confirmar senha *<span><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16" aria-hidden="true" style="flex-shrink:0"><path fill-rule="evenodd" d="M8 0a4 4 0 0 1 4 4v2.05a2.5 2.5 0 0 1 2 2.45v5a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 2 13.5v-5a2.5 2.5 0 0 1 2-2.45V4a4 4 0 0 1 4-4M4.5 7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7zM8 1a3 3 0 0 0-3 3v2h6V4a3 3 0 0 0-3-3"/></svg><input name="confirmar" type="password" placeholder="Digite a senha novamente"  autocomplete="new-password" required><button type="button" class="cad-olho" aria-label="Mostrar senha"><i class="bi bi-eye-slash"></i></button></span></label>
 <label class="cad-aceite lembrar-login">
   <input type="checkbox" name="aceite" class="visually-hidden" required {% if form.aceite.value %}checked{% endif %}>
   <span class="checkmark" aria-hidden="true"></span>
@@ -34,10 +34,14 @@
 </label></fieldset>
 <fieldset><legend>Endereço</legend>
 <label class="cad-campo">Rua e número *<span><i class="bi bi-geo-alt" aria-hidden="true"></i><input name="endereco" type="text" placeholder="Rua e número" value="{{ form.endereco.value|default_if_none:'' }}" autocomplete="street-address" maxlength="200" required></span></label>
-<label class="cad-campo">Cidade *<span><i class="bi bi-geo" aria-hidden="true"></i><input name="cidade" type="text" placeholder="Sua cidade" value="{{ form.cidade.value|default_if_none:'' }}" autocomplete="address-level2" maxlength="100" required></span></label></fieldset>
+<div class="cad-dupla">
+<label class="cad-campo">Estado *<span><i class="bi bi-map" aria-hidden="true"></i><select name="uf" required><option value="">Selecione</option>{% for sigla, nome in form.fields.uf.choices %}<option value="{{ sigla }}"{% if form.uf.value == sigla %} selected{% endif %}>{{ nome }}</option>{% endfor %}</select></span></label>
+<label class="cad-campo">Cidade *<span><i class="bi bi-geo" aria-hidden="true"></i><select name="cidade" data-selecionada="{{ form.cidade.value|default_if_none:'' }}" required disabled><option value="">Selecione o estado primeiro</option></select></span></label>
+</div></fieldset>
 <fieldset><legend>Confirmação</legend><p>Confira seus dados antes de criar a conta.</p><dl class="cad-resumo"></dl></fieldset>
 <button type="button" class="cad-voltar" hidden>← Voltar</button>
 <button class="cad-enviar" type="submit"><i class="bi bi-person-plus"></i> <span>Criar conta</span> →</button>
 </form><p class="cad-entrar">Já tem uma conta? <a href="{% url 'login' %}">Entrar →</a></p></section></main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script defer src="{% static 'js/cpf_cidade.js' %}?v=2"></script>
 <script defer src="{% static 'js/cadastro.js' %}"></script></body></html>

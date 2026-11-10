@@ -30,7 +30,7 @@ voltar.addEventListener('click', () => mostrar(etapa - 1));
 form.addEventListener('submit', event => {
     form.elements.confirmar.setCustomValidity(form.elements.senha.value === form.elements.confirmar.value ? '' : 'As senhas precisam ser iguais.');
     for (let i = 0; i <= etapa; i++) {
-        const invalido = [...etapas[i].querySelectorAll('input')].find(input => !input.checkValidity());
+        const invalido = [...etapas[i].querySelectorAll('input, select')].find(input => !input.checkValidity());
         if (invalido) {
             event.preventDefault();
             mostrar(i);

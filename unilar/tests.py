@@ -10,6 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.test import Client, TestCase
 from django.urls import reverse
+from unittest.mock import patch
 
 from .models import ContatoImovel, Imovel, PerfilCadastro, SolicitacaoVisita
 
@@ -77,23 +78,32 @@ class IntegracaoImovelTests(TestCase):
         token = protected.cookies['csrftoken'].value
         self.assertEqual(protected.post(reverse('favoritar_imovel'), HTTP_X_CSRFTOKEN=token).status_code, 200)
 
+@patch('unilar.forms.municipios_da_uf', return_value=['Patos de Minas', 'Rio Paranaíba'])
 class CadastroTests(TestCase):
-    def test_cadastro_login_e_duplicidade(self):
+    def test_cadastro_login_e_duplicidade(self, _municipios):
         from django.contrib.auth import get_user_model
         from .models import PerfilCadastro
         dados = dict(nome='Pessoa de Teste', cpf='529.982.247-25', email='teste@example.org',
                      senha='Teste!98765abc', confirmar='Teste!98765abc', aceite='on',
-                     endereco='Rua de teste, 10', cidade='Cidade de teste')
+                     endereco='Rua de teste, 10', uf='MG', cidade='Patos de Minas')
         url = reverse('cadastro')
         self.assertContains(self.client.get(url), 'Crie sua conta')
         self.assertFalse(self.client.post(url, {**dados, 'cpf':'11111111111'}).context['form'].is_valid())
         self.assertRedirects(self.client.post(url, dados), reverse('login'))
         self.assertTrue(get_user_model().objects.get().check_password(dados['senha']))
         self.assertEqual(PerfilCadastro.objects.get().cpf, '52998224725')
+        self.assertEqual(PerfilCadastro.objects.get().cidade, 'Patos de Minas - MG')
         self.client.post(url, {**dados, 'email':'outra@example.org'})
         self.assertEqual(get_user_model().objects.count(), 1)
         self.assertRedirects(self.client.post(reverse('login'), dados), reverse('inicio'))
         self.assertIn('_auth_user_id', self.client.session)
+
+    def test_cidade_padronizada_e_fora_da_lista(self, _municipios):
+        from .forms import validar_cidade
+        from django import forms as dj_forms
+        self.assertEqual(validar_cidade('MG', '  rio paranaiba '), 'Rio Paranaíba - MG')
+        with self.assertRaises(dj_forms.ValidationError):
+            validar_cidade('MG', 'Cidade inventada')
 
 
 class PainelTests(TestCase):

@@ -1216,7 +1216,7 @@ body.imovel-aberto { overflow: hidden; }
 .cartao-favorito { max-width: 420px; }
 
 /* Cadastro */
-.cadastro { min-height: calc(100vh - 86px); display:grid; grid-template-columns: 1fr minmax(430px, 44%); align-items:center; gap:5%; padding:3.5% 3% 3.5% 7%; background:linear-gradient(90deg,rgba(3,12,34,.86),rgba(6,33,83,.52) 57%,rgba(70,126,196,.18)),url("imagens/universidade.jpg") center / cover; }
+.cadastro { min-height: calc(100vh - 86px); display:grid; grid-template-columns: 1fr minmax(430px, 44%); align-items:center; gap:5%; padding:3.5% 3% 3.5% 7%; background:linear-gradient(90deg,rgba(3,12,34,.86),rgba(6,33,83,.52) 57%,rgba(70,126,196,.18)),url("../imagens/universidade.jpg") center / cover; }
 .cad-apresentacao { color:white; max-width:590px; }
 .cad-chamada,.cad-passo { font-size:.85rem; font-weight:700; letter-spacing:.18em; color:#74ceff; }
 .cad-apresentacao h1 { font-size:clamp(2.5rem,4.2vw,4.4rem); line-height:1.04; font-weight:800; letter-spacing:-.04em; margin-bottom:2rem; }
@@ -1409,3 +1409,22 @@ body.imovel-aberto { overflow: hidden; }
  .painel-ajuda a { margin: 0; }
  .painel-titulo { flex-wrap: wrap; }
 }
+/* Listas de estado e cidade (cadastro) */
+.cad-campo.seletor { position:relative; }
+.seletor-botao { flex:1; min-width:0; height:44px; display:flex; align-items:center; justify-content:space-between; gap:.5rem; padding:0; border:0; background:transparent; color:#121622; font:inherit; font-weight:700; font-size:.95rem; text-align:left; cursor:pointer; }
+.seletor-botao b { font-weight:inherit; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.seletor-botao.vazio { color:#7b8496; font-weight:500; }
+.seletor-botao i { color:#27519b; font-size:.85rem; transition:transform .2s ease; }
+.seletor-botao[aria-expanded="true"] i { transform:rotate(180deg); }
+.seletor-botao:disabled { cursor:not-allowed; color:#a2a9b6; }
+.seletor-botao:disabled i { color:#c3c9d3; }
+.seletor-botao:focus-visible { outline:none; }
+.cad-campo.seletor span:has(.seletor-botao[aria-expanded="true"]) { outline:2px solid #1764e8; }
+.seletor-painel { position:absolute; z-index:30; left:0; right:0; top:calc(100% + 6px); padding:.5rem; background:#fff; border:1px solid #d5dbe6; border-radius:16px; box-shadow:0 14px 32px #0013312b; }
+.cad-campo .seletor-busca { width:100%; height:40px; padding:0 .8rem; border:1px solid #d5dae3; border-radius:12px; background:#f6f8fc; color:#121622; font:inherit; font-weight:600; font-size:.9rem; outline:none; }
+.cad-campo .seletor-busca:focus { border-color:#1764e8; background:#fff; box-shadow:0 0 0 3px #1764e826; }
+.seletor-lista { list-style:none; margin:.45rem 0 0; padding:0 .15rem 0 0; max-height:236px; overflow-y:auto; overscroll-behavior:contain; }
+.seletor-lista li[role="option"] { padding:.55rem .8rem; border-radius:10px; color:#1d2433; font-weight:600; font-size:.92rem; cursor:pointer; }
+.seletor-lista li[role="option"]:hover, .seletor-lista li.ativo { background:#eef2fb; }
+.seletor-lista li[aria-selected="true"] { background:linear-gradient(100deg,#0458e9,#5b31db); color:#fff; }
+.seletor-vazio { padding:.6rem .8rem; color:#7b8496; font-weight:500; font-size:.9rem; }

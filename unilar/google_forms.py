@@ -2,14 +2,15 @@ from allauth.socialaccount.forms import SignupForm
 from django import forms
 from django.db import transaction
 
-from .forms import validar_cpf
+from .forms import UFS, CidadeUFMixin, validar_cpf
 from .models import PerfilCadastro
 
 
-class CadastroGoogleForm(SignupForm):
+class CadastroGoogleForm(CidadeUFMixin, SignupForm):
     nome = forms.CharField(max_length=150, label='Nome completo')
     cpf = forms.CharField(max_length=14, label='CPF')
     endereco = forms.CharField(max_length=200, label='Rua e número')
+    uf = forms.ChoiceField(choices=UFS, label='Estado')
     cidade = forms.CharField(max_length=100, label='Cidade')
     aceite = forms.BooleanField(label='Li e concordo com os Termos de Uso e a Política de Privacidade.')
 

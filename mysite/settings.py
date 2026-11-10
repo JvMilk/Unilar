@@ -69,11 +69,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'unilar.apps.UnilarConfig',  # antes do allauth para usar os templates do projeto
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'unilar.apps.UnilarConfig',
 
 ]
 
@@ -112,12 +112,52 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Banco de dados
+# 1) PostgreSQL (Supabase): usado quando DATABASE_URL ou POSTGRES_URL existir.
+#    - Na Vercel, a integracao com o Supabase cria POSTGRES_URL automaticamente.
+#    - No seu computador, defina DATABASE_URL com a URI do "Session pooler" do Supabase.
+# 2) Sem essas variaveis: SQL Server local (mssql-django + ODBC Driver 18), configurado por
+#    DB_NAME, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_DRIVER
+#    (sem DB_USER, usa autenticacao do Windows). Para SQLite: DB_ENGINE=sqlite
+_database_url = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
+if _database_url:
+    import dj_database_url
+
+    DATABASES = {'default': dj_database_url.parse(_database_url, conn_max_age=0, ssl_require=True)}
+    _opcoes = DATABASES['default'].setdefault('OPTIONS', {})
+    # A URL gerada pela Vercel traz parametros que o driver do PostgreSQL nao reconhece.
+    for _parametro in ('supa', 'pgbouncer'):
+        _opcoes.pop(_parametro, None)
+    # O pooler do Supabase (modo transacao) nao suporta prepared statements nem cursores no servidor.
+    _opcoes['prepare_threshold'] = None
+    DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+elif os.environ.get('DB_ENGINE', 'mssql').lower() == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    _db_user = os.environ.get('DB_USER', '')
+    _extra_params = 'TrustServerCertificate=yes;'
+    if not _db_user:
+        _extra_params += 'Trusted_Connection=yes;'
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'mssql',
+            'NAME': os.environ.get('DB_NAME', 'unilar'),
+            'USER': _db_user,
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', ''),
+            'OPTIONS': {
+                'driver': os.environ.get('DB_DRIVER', 'ODBC Driver 18 for SQL Server'),
+                'extra_params': _extra_params,
+            },
+        }
+    }
 
 
 # Password validation

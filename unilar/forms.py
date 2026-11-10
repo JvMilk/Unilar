@@ -1,7 +1,11 @@
 from datetime import datetime
+import json
+import unicodedata
+import urllib.request
 from zoneinfo import ZoneInfo
 
 from django import forms
+from django.core.cache import cache
 
 from .models import ConfiguracaoSite, ContatoImovel, Imovel, SolicitacaoVisita
 
@@ -46,7 +50,62 @@ def validar_cpf(cpf):
     return cpf
 
 
-class CadastroForm(forms.Form):
+UFS = [
+    ('AC', 'Acre'), ('AL', 'Alagoas'), ('AP', 'Amapá'), ('AM', 'Amazonas'),
+    ('BA', 'Bahia'), ('CE', 'Ceará'), ('DF', 'Distrito Federal'), ('ES', 'Espírito Santo'),
+    ('GO', 'Goiás'), ('MA', 'Maranhão'), ('MT', 'Mato Grosso'), ('MS', 'Mato Grosso do Sul'),
+    ('MG', 'Minas Gerais'), ('PA', 'Pará'), ('PB', 'Paraíba'), ('PR', 'Paraná'),
+    ('PE', 'Pernambuco'), ('PI', 'Piauí'), ('RJ', 'Rio de Janeiro'), ('RN', 'Rio Grande do Norte'),
+    ('RS', 'Rio Grande do Sul'), ('RO', 'Rondônia'), ('RR', 'Roraima'), ('SC', 'Santa Catarina'),
+    ('SP', 'São Paulo'), ('SE', 'Sergipe'), ('TO', 'Tocantins'),
+]
+IBGE_MUNICIPIOS_URL = 'https://servicodados.ibge.gov.br/api/v1/localidades/estados/{uf}/municipios'
+
+
+def _normalizar(texto):
+    sem_acento = unicodedata.normalize('NFKD', texto).encode('ascii', 'ignore').decode()
+    return ' '.join(sem_acento.casefold().split())
+
+
+def municipios_da_uf(uf):
+    """Lista oficial de municípios da UF (API pública do IBGE), guardada em cache por 24 h."""
+    chave = f'ibge-municipios-{uf}'
+    nomes = cache.get(chave)
+    if nomes is None:
+        with urllib.request.urlopen(IBGE_MUNICIPIOS_URL.format(uf=uf), timeout=8) as resposta:
+            nomes = [municipio['nome'] for municipio in json.load(resposta)]
+        cache.set(chave, nomes, 60 * 60 * 24)
+    return nomes
+
+
+def validar_cidade(uf, cidade):
+    """Confere a cidade na lista do IBGE e devolve no padrão do banco: 'Patos de Minas - MG'."""
+    try:
+        nomes = municipios_da_uf(uf)
+    except (OSError, ValueError, KeyError):
+        raise forms.ValidationError('Não foi possível validar a cidade agora. Tente novamente em instantes.')
+    alvo = _normalizar(cidade)
+    for nome in nomes:
+        if _normalizar(nome) == alvo:
+            return f'{nome} - {uf}'
+    raise forms.ValidationError('Selecione uma cidade da lista.')
+
+
+class CidadeUFMixin:
+    """Valida o par estado/cidade e grava a cidade no formato padronizado."""
+
+    def clean(self):
+        dados = super().clean()
+        uf, cidade = dados.get('uf'), dados.get('cidade')
+        if uf and cidade:
+            try:
+                dados['cidade'] = validar_cidade(uf, cidade)
+            except forms.ValidationError as erro:
+                self.add_error('cidade', erro)
+        return dados
+
+
+class CadastroForm(CidadeUFMixin, forms.Form):
     nome = forms.CharField(max_length=150, label='Nome completo')
     cpf = forms.CharField(max_length=14, label='CPF')
     email = forms.EmailField(max_length=150, label='E-mail')
@@ -54,6 +113,7 @@ class CadastroForm(forms.Form):
     confirmar = forms.CharField(strip=False, widget=forms.PasswordInput, label='Confirmar senha')
     aceite = forms.BooleanField()
     endereco = forms.CharField(max_length=200, label='Rua e número')
+    uf = forms.ChoiceField(choices=UFS, label='Estado')
     cidade = forms.CharField(max_length=100, label='Cidade')
 
     def clean_cpf(self):
