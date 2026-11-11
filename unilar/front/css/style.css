@@ -1515,7 +1515,22 @@ img.painel-avatar { object-fit: cover; padding: 0; }
 .minha-duvida-topo { display: flex; justify-content: space-between; align-items: center; }
 .minha-duvida-topo time, .minha-duvida small { color: var(--texto-suave); font-size: 12px; }
 .minha-duvida strong { font-size: 14px; overflow-wrap: anywhere; }
-.minha-duvida-resposta { margin: 6px 0 0; padding: 10px 12px; border-radius: 10px; background: #fff; border-left: 3px solid var(--roxo); font-size: 13px; color: var(--azul-escuro); }
+
+.minha-duvida-visualizar { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; padding: 8px 14px; border: 1px solid var(--roxo); border-radius: 10px; background: #fff; color: var(--roxo); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s ease, color .2s ease; }
+.minha-duvida-visualizar:hover, .minha-duvida-visualizar:focus-visible { background: linear-gradient(100deg, #6a2cff, var(--roxo)); border-color: transparent; color: #fff; }
+.minha-duvida-visualizar svg { width: 15px; height: 15px; }
+.resposta-corpo { display: grid; gap: 14px; padding: 22px; }
+.resposta-bloco { padding: 16px 18px; border-radius: 16px; background: #f6f8ff; border: 1px solid var(--borda); }
+.resposta-bloco h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; color: var(--texto-suave); font-size: 12px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+.resposta-bloco h3 time { margin-left: auto; font-weight: 600; letter-spacing: 0; text-transform: none; }
+.resposta-bloco strong { display: block; margin-bottom: 4px; font-size: 15px; overflow-wrap: anywhere; }
+.resposta-bloco p { margin: 0; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+.resposta-equipe { background: linear-gradient(145deg, #fff, #f5f0ff); border-color: #ddd0ff; border-left: 4px solid var(--roxo); }
+.resposta-equipe h3 { color: var(--roxo); }
+.resposta-aguardando { background: #fffaf0; border-color: #f3e2b8; }
+.resposta-aguardando h3 { color: #8a5a00; }
+.resposta-nova { justify-self: stretch; margin-top: 2px; }
+.resposta-indisponivel { margin: 0; color: var(--texto-suave); font-size: 13px; text-align: center; }
 .duvida-status { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
 .duvida-status-pendente { background: #fff4d6; color: #8a5a00; }
 .duvida-status-respondida { background: #dcf6e6; color: #146c3a; }

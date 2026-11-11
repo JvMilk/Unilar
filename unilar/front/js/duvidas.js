@@ -15,7 +15,17 @@
         }
     }
 
-    modal.addEventListener('show.bs.modal', function (evento) { preencher(evento.relatedTarget); });
+    modal.addEventListener('show.bs.modal', function (evento) {
+        const botao = evento.relatedTarget;
+        if (botao && botao.classList.contains('resposta-nova')) {
+            // Nova dúvida a partir de "Visualizar": começa com os campos em branco.
+            const assunto = document.getElementById('duvidaAssunto');
+            const texto = document.getElementById('duvidaMensagem');
+            if (assunto) assunto.value = '';
+            if (texto) { texto.value = ''; texto.dispatchEvent(new Event('input')); }
+        }
+        preencher(botao);
+    });
     modal.addEventListener('shown.bs.modal', function () {
         const assunto = document.getElementById('duvidaAssunto');
         if (assunto) assunto.focus();

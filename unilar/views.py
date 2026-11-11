@@ -220,14 +220,16 @@ def duvidas(request):
         if imovel is None:
             form.add_error(None, 'Escolha um imóvel da lista para enviar sua dúvida.')
         imovel_aberto = imovel
+    lista_imoveis = [dados_catalogo(item) for item in imoveis]
     minhas_duvidas = []
     if request.user.is_authenticated:
-        titulos = dict(imoveis.values_list('slug', 'titulo'))
+        por_slug = {item['slug']: item for item in lista_imoveis}
         minhas_duvidas = list(ContatoImovel.objects.filter(usuario=request.user)[:5])
         for duvida in minhas_duvidas:
-            duvida.titulo_imovel = titulos.get(duvida.imovel, duvida.imovel)
+            duvida.imovel_dados = por_slug.get(duvida.imovel)  # None se o imóvel saiu do ar
+            duvida.titulo_imovel = duvida.imovel_dados['titulo'] if duvida.imovel_dados else duvida.imovel
     return render(request, 'duvidas.html', {
-        'imoveis': [dados_catalogo(item) for item in imoveis],
+        'imoveis': lista_imoveis,
         'form': form,
         'imovel_aberto': imovel_aberto,
         'minhas_duvidas': minhas_duvidas,

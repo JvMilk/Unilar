@@ -274,6 +274,8 @@ class DuvidasTests(TestCase):
         pagina = self.client.get(reverse('duvidas'))
         self.assertContains(pagina, 'Sim, pets pequenos são aceitos.')
         self.assertContains(pagina, 'Respondida')
+        self.assertContains(pagina, f'data-bs-target="#resposta-{duvida.pk}"')  # botão Visualizar
+        self.assertContains(pagina, 'Enviar outra dúvida')
 
     def test_login_volta_para_duvidas(self):
         resposta = self.client.post(f"{reverse('login')}?next={reverse('duvidas')}",
