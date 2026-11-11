@@ -170,6 +170,40 @@ class PerfilPainelForm(forms.ModelForm):
         fields = ['nome', 'telefone', 'curso', 'universidade']
 
 
+FOTO_PERFIL_TAMANHO_MAXIMO = 4 * 1024 * 1024  # 4 MB (a Vercel recusa envios acima de 4,5 MB)
+FOTO_PERFIL_LADO = 320
+
+
+class FotoPerfilForm(forms.Form):
+    foto = forms.ImageField(label='Foto de perfil')
+
+    def clean_foto(self):
+        from io import BytesIO
+        from PIL import Image, ImageOps
+
+        arquivo = self.cleaned_data['foto']
+        if arquivo.size > FOTO_PERFIL_TAMANHO_MAXIMO:
+            raise forms.ValidationError('A imagem deve ter no máximo 4 MB.')
+        try:
+            arquivo.seek(0)
+            imagem = Image.open(arquivo)
+            if imagem.format not in {'JPEG', 'PNG', 'WEBP'}:
+                raise forms.ValidationError('Envie uma imagem JPG, PNG ou WEBP.')
+            if imagem.width * imagem.height > 40_000_000:
+                raise forms.ValidationError('A imagem é grande demais. Use uma foto menor.')
+            imagem = ImageOps.exif_transpose(imagem).convert('RGB')
+        except forms.ValidationError:
+            raise
+        except Exception:
+            raise forms.ValidationError('Não foi possível ler a imagem. Envie outro arquivo.')
+        # Recorta no centro em formato quadrado, reduz e regrava como JPEG.
+        # Regravar descarta metadados (como localização GPS) e qualquer conteúdo escondido no arquivo.
+        imagem = ImageOps.fit(imagem, (FOTO_PERFIL_LADO, FOTO_PERFIL_LADO), Image.Resampling.LANCZOS)
+        saida = BytesIO()
+        imagem.save(saida, format='JPEG', quality=85, optimize=True)
+        return saida.getvalue()
+
+
 class MultipleImageInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 

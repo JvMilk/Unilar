@@ -176,6 +176,39 @@ class PainelTests(TestCase):
         self.assertNotContains(resposta, botao_entrar)
 
 
+    def _imagem(self, formato='PNG', tamanho=(800, 600)):
+        from io import BytesIO
+        from PIL import Image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        buffer = BytesIO()
+        Image.new('RGB', tamanho, (30, 90, 200)).save(buffer, format=formato)
+        return SimpleUploadedFile(f'foto.{formato.lower()}', buffer.getvalue(), content_type=f'image/{formato.lower()}')
+
+    def test_foto_de_perfil_envio_exibicao_e_remocao(self):
+        from io import BytesIO
+        from PIL import Image
+        from .models import DadosPainel
+        self.client.force_login(self.usuario)
+        self.assertEqual(self.client.get('/painel/foto/').status_code, 404)
+        resposta = self.client.post('/painel/foto/enviar/', {'foto': self._imagem()})
+        self.assertRedirects(resposta, '/painel/')
+        foto = self.client.get('/painel/foto/')
+        self.assertEqual(foto['Content-Type'], 'image/jpeg')
+        self.assertEqual(Image.open(BytesIO(foto.content)).size, (320, 320))
+        self.assertContains(self.client.get('/painel/'), '/painel/foto/?v=')
+        self.client.post('/painel/foto/remover/')
+        self.assertIsNone(DadosPainel.objects.get(usuario=self.usuario).foto)
+
+    def test_foto_de_perfil_recusa_arquivo_invalido_e_exige_login(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        self.assertEqual(self.client.get('/painel/foto/').status_code, 302)
+        self.client.force_login(self.usuario)
+        falso = SimpleUploadedFile('foto.png', b'isto nao e uma imagem', content_type='image/png')
+        resposta = self.client.post('/painel/foto/enviar/', {'foto': falso}, follow=True)
+        self.assertContains(resposta, 'alert-danger')
+        self.assertEqual(self.client.get('/painel/foto/').status_code, 404)
+
+
 class AdminAreaTests(TestCase):
     def setUp(self):
         from django.contrib.auth import get_user_model

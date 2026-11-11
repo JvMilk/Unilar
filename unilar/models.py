@@ -61,6 +61,10 @@ class DadosPainel(models.Model):
     telefone = models.CharField(max_length=25, blank=True)
     curso = models.CharField(max_length=150, blank=True)
     universidade = models.CharField(max_length=150, blank=True)
+    # Foto de perfil guardada no próprio banco (JPEG 320x320, ~20-40 KB).
+    # Na Vercel, arquivos gravados em pasta não permanecem entre implantações.
+    foto = models.BinaryField(null=True, blank=True, editable=False)
+    foto_atualizada_em = models.DateTimeField(null=True, blank=True, editable=False)
 
 
 class Imovel(models.Model):

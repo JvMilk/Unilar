@@ -7,14 +7,14 @@
   <title>Meu painel | {{ configuracao_site.nome_site|default:"UniLar" }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="{% static 'css/style.css' %}" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}?v=20261111b" rel="stylesheet">
 </head>
 <body class="painel-page">
   {% include "cabecalho.html" %}
   <div class="painel-layout">
     <aside class="painel-sidebar">
       <div class="painel-identidade">
-        <span class="painel-avatar" aria-hidden="true">{{ nome|first|upper }}</span>
+        {% if dados.foto_atualizada_em %}<img class="painel-avatar" src="{% url 'painel_foto' %}?v={{ dados.foto_atualizada_em|date:'U' }}" alt="" width="52" height="52">{% else %}<span class="painel-avatar" aria-hidden="true">{{ nome|first|upper }}</span>{% endif %}
         <div><strong>{{ nome }}</strong><span>{{ dados.curso|default:"Minha conta" }}</span><small>{{ user.email }}</small></div>
       </div>
       <nav aria-label="Menu do painel">
@@ -28,7 +28,7 @@
       <form action="{% url 'sair' %}" method="post" class="painel-sair">{% csrf_token %}<button><i class="bi bi-box-arrow-right"></i> Sair</button></form>
     </aside>
     <main class="painel-main">
-      {% for message in messages %}<p role="status" class="alert alert-success">{{ message }}</p>{% endfor %}
+      {% for message in messages %}<p role="status" class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">{{ message }}</p>{% endfor %}
       <section id="perfil" class="painel-secao">
         <div class="painel-titulo"><h1>Meu perfil</h1><a href="{% url 'painel' %}?editar=1"><i class="bi bi-pencil-square"></i> Editar perfil</a></div>
         {% if editando %}
@@ -38,6 +38,19 @@
           <div><button class="btn btn-primary">Salvar alterações</button> <a href="{% url 'painel' %}">Cancelar</a></div>
         </form>
         {% else %}
+        <div class="painel-cartao painel-foto">
+          <div class="painel-foto-preview" id="fotoPreview">{% if dados.foto_atualizada_em %}<img src="{% url 'painel_foto' %}?v={{ dados.foto_atualizada_em|date:'U' }}" alt="Sua foto de perfil" width="112" height="112">{% else %}<span aria-hidden="true">{{ nome|first|upper }}</span>{% endif %}</div>
+          <div class="painel-foto-conteudo">
+            <h2>Foto de perfil</h2>
+            <p>JPG, PNG ou WEBP de até 4 MB. A foto é recortada em formato quadrado.</p>
+            <form method="post" action="{% url 'painel_foto_enviar' %}" enctype="multipart/form-data" class="painel-foto-acoes">{% csrf_token %}
+              <label class="painel-foto-escolher"><input type="file" name="foto" id="fotoArquivo" accept="image/jpeg,image/png,image/webp" required class="visually-hidden"><i class="bi bi-upload" aria-hidden="true"></i> <span id="fotoNome">Escolher foto</span></label>
+              <button type="submit" class="painel-foto-salvar" id="fotoSalvar" disabled><i class="bi bi-check2" aria-hidden="true"></i> Salvar foto</button>
+            </form>
+            {% if dados.foto_atualizada_em %}<form method="post" action="{% url 'painel_foto_remover' %}" class="painel-foto-remover">{% csrf_token %}<button type="submit"><i class="bi bi-trash3" aria-hidden="true"></i> Remover foto</button></form>{% endif %}
+            <p class="painel-foto-erro" id="fotoErro" role="alert" hidden></p>
+          </div>
+        </div>
         <div class="painel-cartao painel-dados">
           <dl><dt>Nome</dt><dd>{{ nome }}</dd><dt>E-mail</dt><dd>{{ user.email|default:"Não informado" }}</dd><dt>Telefone</dt><dd>{{ dados.telefone|default:"Não informado" }}</dd>{% if cpf_mascarado %}<dt>CPF</dt><dd>{{ cpf_mascarado }}</dd>{% endif %}</dl>
           <dl><dt>Curso</dt><dd>{{ dados.curso|default:"Não informado" }}</dd><dt>Universidade</dt><dd>{{ dados.universidade|default:"Não informada" }}</dd>{% if perfil %}<dt>Cidade</dt><dd>{{ perfil.cidade }}</dd><dt>Endereço</dt><dd>{{ perfil.endereco }}</dd>{% endif %}</dl>
@@ -58,7 +71,7 @@
       <div class="painel-ajuda"><i class="bi bi-mortarboard-fill" aria-hidden="true"></i><div><h2>Precisa de ajuda?</h2><p>Encontre orientações para buscar seu próximo lar.</p></div><a href="{% url 'imoveis' %}"><i class="bi bi-search"></i> Buscar imóveis</a></div>
     </main>
   </div>
-  <script src="{% static 'painel.js' %}" defer></script>
+  <script src="{% static 'painel.js' %}?v=2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

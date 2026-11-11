@@ -252,13 +252,15 @@ def solicitar_visita(request):
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from .models import DadosPainel
-from .forms import PerfilPainelForm
+from .forms import FotoPerfilForm, PerfilPainelForm
+from django.http import HttpResponse
+from django.utils import timezone
 
 
 @login_required(login_url='login')
 def painel(request):
     perfil = PerfilCadastro.objects.filter(usuario=request.user).first()
-    dados = DadosPainel.objects.filter(usuario=request.user).first()
+    dados = DadosPainel.objects.filter(usuario=request.user).defer('foto').first()
     nome = (perfil.nome if perfil else request.user.get_full_name()) or request.user.username
     form = PerfilPainelForm(request.POST if request.method == 'POST' else None,
                            instance=dados, initial={'nome': nome})
@@ -290,6 +292,40 @@ def painel(request):
             for item in Imovel.objects.filter(slug__in=visitados, status=Imovel.Status.DISPONIVEL).prefetch_related('fotos')
         ],
     })
+
+
+@login_required(login_url='login')
+@require_POST
+def painel_foto_enviar(request):
+    form = FotoPerfilForm(request.POST, request.FILES)
+    if form.is_valid():
+        dados, _ = DadosPainel.objects.get_or_create(usuario=request.user)
+        dados.foto = form.cleaned_data['foto']
+        dados.foto_atualizada_em = timezone.now()
+        dados.save(update_fields=['foto', 'foto_atualizada_em'])
+        messages.success(request, 'Foto de perfil atualizada.')
+    else:
+        messages.error(request, form.errors['foto'][0])
+    return redirect('painel')
+
+
+@login_required(login_url='login')
+@require_POST
+def painel_foto_remover(request):
+    DadosPainel.objects.filter(usuario=request.user).update(foto=None, foto_atualizada_em=None)
+    messages.success(request, 'Foto de perfil removida.')
+    return redirect('painel')
+
+
+@login_required(login_url='login')
+def painel_foto(request):
+    """Entrega a foto de quem está logado (cada usuário só acessa a própria)."""
+    dados = DadosPainel.objects.filter(usuario=request.user).only('foto').first()
+    if not dados or not dados.foto:
+        raise Http404
+    resposta = HttpResponse(bytes(dados.foto), content_type='image/jpeg')
+    resposta['Cache-Control'] = 'private, max-age=86400'
+    return resposta
 
 
 @require_POST
