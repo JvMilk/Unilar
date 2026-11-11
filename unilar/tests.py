@@ -98,6 +98,16 @@ class CadastroTests(TestCase):
         self.assertRedirects(self.client.post(reverse('login'), dados), reverse('inicio'))
         self.assertIn('_auth_user_id', self.client.session)
 
+    def test_login_bloqueado_apos_tentativas(self, _municipios):
+        from django.contrib.auth import get_user_model
+        get_user_model().objects.create_user(username='aluno@teste.com', email='aluno@teste.com', password='SenhaForte@2026')
+        for _ in range(5):
+            self.client.post(reverse('login'), {'email': 'aluno@teste.com', 'senha': 'errada'})
+        resposta = self.client.post(reverse('login'), {'email': 'aluno@teste.com', 'senha': 'SenhaForte@2026'})
+        self.assertEqual(resposta.status_code, 429)
+        self.assertContains(resposta, 'Muitas tentativas', status_code=429)
+        self.assertNotIn('_auth_user_id', self.client.session)
+
     def test_cidade_padronizada_e_fora_da_lista(self, _municipios):
         from .forms import validar_cidade
         from django import forms as dj_forms

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 import os
 from django.core.management.utils import get_random_secret_key
@@ -28,6 +29,16 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or get_random_secret_key()
 # Na Vercel (variavel VERCEL definida) o padrao e DEBUG desligado; no computador, ligado.
 # Para forcar: DJANGO_DEBUG=1 ou DJANGO_DEBUG=0
 DEBUG = os.environ.get('DJANGO_DEBUG', '0' if os.environ.get('VERCEL') else '1').lower() in {'1', 'true', 'yes'}
+
+# Seguranca em producao (site publicado com HTTPS). No computador (DEBUG ligado) nada muda.
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  # a Vercel entrega o HTTPS via proxy
+    SECURE_SSL_REDIRECT = True  # http:// vira https://
+    SESSION_COOKIE_SECURE = True  # cookie de login so trafega por HTTPS
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30  # navegador passa a exigir HTTPS por 30 dias
+    SECURE_REFERRER_POLICY = 'same-origin'
+SESSION_COOKIE_HTTPONLY = True  # o JavaScript da pagina nao consegue ler o cookie de login
 
 codespace_name = os.environ.get('CODESPACE_NAME', '').strip()
 codespaces_domain = os.environ.get(
@@ -76,7 +87,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-
+    'axes',
 ]
 
 MIDDLEWARE = [
@@ -89,7 +100,22 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',  # deve ser o ultimo
 ]
+
+# Limite de tentativas de login (django-axes): 5 senhas erradas seguidas para o mesmo
+# e-mail a partir do mesmo IP bloqueiam novas tentativas por 15 minutos.
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = timedelta(minutes=15)
+AXES_LOCKOUT_PARAMETERS = [['username', 'ip_address']]
+AXES_RESET_ON_SUCCESS = True
+AXES_USERNAME_FORM_FIELD = 'email'
+AXES_LOCKOUT_CALLABLE = 'unilar.views.login_bloqueado'
+AXES_IPWARE_META_PRECEDENCE_ORDER = ['HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR']
 
 ROOT_URLCONF = 'mysite.urls'
 

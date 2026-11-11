@@ -26,6 +26,12 @@ def login(request):
     return render(request, 'login.html', {'google_login_ativo': settings.GOOGLE_LOGIN_ATIVO})
 
 
+def login_bloqueado(request, *args, **kwargs):
+    """Resposta mostrada quando o django-axes bloqueia o login por excesso de tentativas."""
+    messages.error(request, 'Muitas tentativas de login com senha errada. Aguarde 15 minutos e tente novamente.')
+    return render(request, 'login.html', {'google_login_ativo': settings.GOOGLE_LOGIN_ATIVO}, status=429)
+
+
 def cadastro(request):
     form = CadastroForm(request.POST if request.method == 'POST' else None)
     if request.method == 'POST' and form.is_valid():
