@@ -42,8 +42,9 @@
 {% for erro in form.cidade.errors %}<small class="text-danger">{{ erro }}</small>{% endfor %}</label>
 </div>
 
-<label class="cad-aceite">
-  <input type="checkbox" name="aceite" required {% if form.aceite.value %}checked{% endif %}>
+<label class="cad-aceite lembrar-login">
+  <input type="checkbox" name="aceite" class="visually-hidden" required {% if form.aceite.value %}checked{% endif %}>
+  <span class="checkmark" aria-hidden="true"></span>
   <span>Li e concordo com os Termos de Uso e a Política de Privacidade.</span>
 </label>
 {% for erro in form.aceite.errors %}<small class="text-danger d-block mb-2">{{ erro }}</small>{% endfor %}

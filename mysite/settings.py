@@ -25,7 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or get_random_secret_key()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Na Vercel (variavel VERCEL definida) o padrao e DEBUG desligado; no computador, ligado.
+# Para forcar: DJANGO_DEBUG=1 ou DJANGO_DEBUG=0
+DEBUG = os.environ.get('DJANGO_DEBUG', '0' if os.environ.get('VERCEL') else '1').lower() in {'1', 'true', 'yes'}
 
 codespace_name = os.environ.get('CODESPACE_NAME', '').strip()
 codespaces_domain = os.environ.get(
@@ -79,6 +81,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -114,12 +117,16 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 # Banco de dados
 # 1) PostgreSQL (Supabase): usado quando DATABASE_URL ou POSTGRES_URL existir.
-#    - Na Vercel, a integracao com o Supabase cria POSTGRES_URL automaticamente.
+#    - Na Vercel, a integracao com o Supabase cria POSTGRES_URL (ou <PREFIXO>_POSTGRES_URL).
 #    - No seu computador, defina DATABASE_URL com a URI do "Session pooler" do Supabase.
 # 2) Sem essas variaveis: SQL Server local (mssql-django + ODBC Driver 18), configurado por
 #    DB_NAME, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_DRIVER
 #    (sem DB_USER, usa autenticacao do Windows). Para SQLite: DB_ENGINE=sqlite
-_database_url = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
+_database_url = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL') or next(
+    # a integracao da Vercel pode criar a variavel com prefixo (ex.: SUPA_BD_POSTGRES_URL)
+    (valor for nome, valor in sorted(os.environ.items()) if nome.endswith('_POSTGRES_URL') and valor),
+    '',
+)
 if _database_url:
     import dj_database_url
 
@@ -199,6 +206,9 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'unilar' / 'front',
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+# WhiteNoise serve o CSS/JS/imagens mesmo com DEBUG desligado (necessario na Vercel).
+WHITENOISE_USE_FINDERS = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
