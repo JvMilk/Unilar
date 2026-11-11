@@ -13,8 +13,11 @@ class ContatoImovel(models.Model):
         RESPONDIDA = 'respondida', 'Respondida'
 
     imovel = models.SlugField(default='kitnet-no-centro', max_length=180)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                related_name='duvidas')
     nome = models.CharField(max_length=120)
     email = models.EmailField()
+    assunto = models.CharField(max_length=120, blank=True)
     mensagem = models.TextField(max_length=3000)
     criado_em = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.PENDENTE)

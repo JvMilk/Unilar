@@ -1469,3 +1469,92 @@ img.painel-avatar { object-fit: cover; padding: 0; }
     .painel-foto { flex-direction: column; text-align: center; }
     .painel-foto-acoes { justify-content: center; }
 }
+
+/* Avatar "Meu painel" na barra de navegação: foto de perfil ou inicial do nome */
+.avatar-menu { display: inline-grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; overflow: hidden; background: #d8e7ff; color: var(--azul); font-size: 20px; font-weight: 800; line-height: 1; text-decoration: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul); transition: box-shadow .2s ease, transform .2s ease; }
+.avatar-menu img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-menu:hover { transform: scale(1.06); color: var(--azul); }
+.avatar-menu:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul), 0 0 0 7px #0750ff40; }
+
+/* ==================================================
+   PÁGINA DÚVIDAS
+   ================================================== */
+.duvidas-unilar { padding: 32px clamp(18px, 3.6vw, 58px) 48px; color: var(--azul-escuro); background: #f4f8ff; }
+.duvidas-intro { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; align-items: center; padding: 30px 34px; margin-bottom: 26px; border-radius: 20px; background: linear-gradient(115deg, #fff 0%, #fff 55%, #eef1ff 100%); border: 1px solid var(--borda); box-shadow: 0 8px 28px rgb(30 85 160 / 8%); }
+.duvidas-sobretitulo { margin: 0 0 10px; color: var(--azul); font-size: 12px; font-weight: 700; letter-spacing: 2px; }
+.duvidas-intro h1 { margin: 0 0 12px; font-size: clamp(26px, 3vw, 38px); font-weight: 800; letter-spacing: -.7px; text-wrap: balance; }
+.duvidas-intro h1 span { background: linear-gradient(100deg, var(--azul), var(--roxo)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.duvidas-intro > div > p:last-child { margin: 0; max-width: 62ch; color: var(--texto-suave); font-size: 15px; line-height: 1.6; }
+.duvidas-passos { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.duvidas-passos li { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 14px; background: #fff; border: 1px solid var(--borda); }
+.duvidas-passos li > span { display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; color: #fff; font-weight: 800; background: linear-gradient(100deg, var(--azul), var(--roxo)); }
+.duvidas-passos strong { display: block; font-size: 15px; }
+.duvidas-passos small { color: var(--texto-suave); font-size: 13px; }
+.duvidas-alerta { border-radius: 12px; }
+.duvidas-colunas { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+.duvidas-lista-topo { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.duvidas-lista-topo h2, .duvidas-lateral h2 { margin: 0; font-size: 21px; font-weight: 800; }
+.duvidas-busca { display: flex; align-items: center; gap: 8px; padding: 0 14px; border: 1px solid var(--borda); border-radius: 12px; background: #fff; color: var(--texto-suave); }
+.duvidas-busca input { width: 220px; max-width: 100%; height: 42px; border: 0; outline: none; background: transparent; color: var(--azul-escuro); }
+.duvidas-busca:focus-within { border-color: var(--azul); box-shadow: 0 0 0 3px #0750ff26; }
+.duvidas-imoveis { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.duvida-imovel { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; align-items: center; gap: 16px; width: 100%; padding: 12px; border: 1px solid var(--borda); border-radius: 16px; background: #fff; color: inherit; text-align: left; font: inherit; cursor: pointer; transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.duvida-imovel:hover { border-color: var(--azul); box-shadow: 0 10px 24px rgb(7 80 255 / 12%); transform: translateY(-2px); }
+.duvida-imovel:focus-visible { outline: 3px solid var(--azul); outline-offset: 3px; }
+.duvida-imovel img { width: 92px; height: 72px; border-radius: 12px; object-fit: cover; }
+.duvida-imovel-texto { min-width: 0; display: grid; gap: 3px; }
+.duvida-imovel-texto strong { font-size: 16px; font-weight: 800; }
+.duvida-imovel-texto small { color: var(--azul); font-size: 13px; font-weight: 600; }
+.duvida-imovel-texto > span { color: var(--texto-suave); font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+.duvida-imovel-acao { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 10px; background: #eef1ff; color: var(--roxo); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.duvida-imovel:hover .duvida-imovel-acao { background: linear-gradient(100deg, #6a2cff, var(--roxo)); color: #fff; }
+.duvidas-vazio { padding: 22px; border-radius: 14px; background: #fff; color: var(--texto-suave); text-align: center; }
+.duvidas-lateral { display: grid; gap: 12px; padding: 22px; border-radius: 18px; background: #fff; border: 1px solid var(--borda); position: sticky; top: 16px; }
+.duvidas-lateral-texto { margin: 0; color: var(--texto-suave); font-size: 14px; line-height: 1.55; }
+.minha-duvida { display: grid; gap: 4px; padding: 12px 14px; border-radius: 12px; background: #f6f8ff; }
+.minha-duvida-topo { display: flex; justify-content: space-between; align-items: center; }
+.minha-duvida-topo time, .minha-duvida small { color: var(--texto-suave); font-size: 12px; }
+.minha-duvida strong { font-size: 14px; overflow-wrap: anywhere; }
+.minha-duvida-resposta { margin: 6px 0 0; padding: 10px 12px; border-radius: 10px; background: #fff; border-left: 3px solid var(--roxo); font-size: 13px; color: var(--azul-escuro); }
+.duvida-status { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.duvida-status-pendente { background: #fff4d6; color: #8a5a00; }
+.duvida-status-respondida { background: #dcf6e6; color: #146c3a; }
+.duvidas-botao-secundario { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 18px; border: 1px solid var(--azul); border-radius: 12px; color: var(--azul); font-weight: 700; text-decoration: none; }
+.duvidas-botao-secundario:hover { background: var(--azul); color: #fff; }
+.duvidas-link { color: var(--azul); font-size: 13px; font-weight: 600; text-decoration: none; text-align: center; }
+.duvidas-link:hover { text-decoration: underline; }
+
+/* Caixa (modal) da dúvida */
+.duvida-modal { border: 0; border-radius: 22px; background: #fff; overflow: hidden; color: var(--azul-escuro); box-shadow: 0 24px 60px rgb(7 25 107 / 25%); }
+.duvida-modal-topo { display: flex; align-items: center; gap: 14px; padding: 20px 22px; background: linear-gradient(115deg, #f4f6ff, #ece6ff); }
+.duvida-modal-topo img { width: 64px; height: 64px; flex-shrink: 0; border-radius: 14px; object-fit: cover; background: #dfe6ff; }
+.duvida-modal-topo div { flex: 1; min-width: 0; }
+.duvida-modal-topo p { margin: 0; color: var(--roxo); font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.duvida-modal-topo h2 { margin: 2px 0; font-size: 19px; font-weight: 800; overflow-wrap: anywhere; }
+.duvida-modal-topo small { color: var(--texto-suave); font-size: 13px; }
+.duvida-modal-topo .btn-close { align-self: flex-start; }
+.duvida-form { display: grid; gap: 8px; padding: 22px; }
+.duvida-form label { margin-top: 6px; font-size: 13px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+.duvida-form input, .duvida-form textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--borda); border-radius: 14px; background: #f8faff; color: var(--azul-escuro); font: inherit; outline: none; resize: vertical; }
+.duvida-form input:focus, .duvida-form textarea:focus { border-color: var(--roxo); background: #fff; box-shadow: 0 0 0 3px #8035ff26; }
+.duvida-contador { justify-self: end; color: var(--texto-suave); font-size: 12px; font-variant-numeric: tabular-nums; }
+.duvida-erro { margin: 0; color: #c0392b; font-size: 13px; font-weight: 600; }
+.duvida-enviar { display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; padding: 13px 26px; border: 0; border-radius: 14px; color: #fff; background: linear-gradient(100deg, #6a2cff, var(--roxo)); font: inherit; font-size: 16px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; text-decoration: none; box-shadow: 0 10px 22px rgb(128 53 255 / 30%); transition: filter .2s ease, transform .2s ease; }
+.duvida-enviar:hover, .duvida-enviar:focus-visible { color: #fff; filter: brightness(1.08); transform: translateY(-1px); }
+.duvida-enviar svg { width: 18px; height: 18px; }
+.duvida-login { display: grid; justify-items: center; gap: 8px; padding: 28px 24px 26px; text-align: center; }
+.duvida-login > i { font-size: 34px; color: var(--roxo); }
+.duvida-login h3 { margin: 0; font-size: 19px; font-weight: 800; }
+.duvida-login p { margin: 0 0 6px; color: var(--texto-suave); font-size: 14px; }
+
+@media (max-width: 991.98px) {
+    .duvidas-intro, .duvidas-colunas { grid-template-columns: 1fr; }
+    .duvidas-lateral { position: static; }
+}
+@media (max-width: 575.98px) {
+    .duvidas-intro { padding: 22px 18px; }
+    .duvida-imovel { grid-template-columns: 72px minmax(0, 1fr); }
+    .duvida-imovel img { width: 72px; height: 60px; }
+    .duvida-imovel-acao { grid-column: 1 / -1; justify-content: center; }
+    .duvidas-busca, .duvidas-busca input { width: 100%; }
+}

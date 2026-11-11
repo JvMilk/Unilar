@@ -239,3 +239,22 @@
   .properties-table .empty-row { display: block; grid-column: 1 / -1; padding: 30px 12px !important; border: 0 !important; text-align: center; }
   .properties-table .empty-row::before { content: none; }
 }
+
+/* Dúvidas e mensagens: dados da dúvida e painel de resposta */
+.message-facts { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 14px 18px; margin: 20px 0; padding: 18px; border: 1px solid var(--admin-line); border-radius: 13px; background: #fbfcff; }
+.message-facts dt { display: flex; align-items: flex-start; gap: 7px; color: var(--admin-muted); font-size: 12px; font-weight: 600; }
+.message-facts dt i { color: var(--admin-purple, #7627f4); }
+.message-facts dd { margin: 0; min-width: 0; color: var(--admin-ink); font-size: 13px; overflow-wrap: anywhere; }
+.message-facts dd a { color: var(--admin-blue); font-weight: 600; }
+.message-facts .message-body { min-height: 0; }
+.reply-panel { margin: 18px 0 14px; }
+.reply-panel > summary { list-style: none; width: fit-content; }
+.reply-panel > summary::-webkit-details-marker { display: none; }
+.reply-panel[open] > summary { margin-bottom: 4px; background: #eef2ff; color: var(--admin-blue) !important; }
+.reply-panel .reply-form { margin-top: 12px; padding: 18px; border: 1px solid #e4dcff; border-radius: 16px; background: linear-gradient(145deg, #fff, #f8f5ff); }
+.reply-panel textarea { min-height: 130px; border-radius: 12px; font: inherit; font-size: 13px; }
+.reply-panel textarea:focus { outline: none; border-color: var(--admin-purple, #7627f4); box-shadow: 0 0 0 3px #7627f41f; }
+.button-enviar { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; gap: 9px; padding: 9px 24px; border: 0; border-radius: 12px; color: #fff; background: linear-gradient(100deg, #6a2cff, #8035ff); font-size: 13px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; cursor: pointer; box-shadow: 0 8px 18px #8035ff40; transition: filter .2s ease, transform .2s ease; }
+.button-enviar:hover, .button-enviar:focus-visible { filter: brightness(1.08); transform: translateY(-1px); }
+.button-enviar svg { width: 17px; height: 17px; }
+@media (max-width: 760px) { .message-facts { grid-template-columns: 1fr; gap: 4px; } .message-facts dd { margin-bottom: 10px; } }

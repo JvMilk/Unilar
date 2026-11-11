@@ -199,15 +199,17 @@ def mensagens_admin(request, pk=None):
     busca = request.GET.get('q', '').strip()
     status = request.GET.get('status', '')
     if busca:
-        duvidas = duvidas.filter(nome__icontains=busca) | duvidas.filter(email__icontains=busca) | duvidas.filter(mensagem__icontains=busca)
+        duvidas = duvidas.filter(nome__icontains=busca) | duvidas.filter(email__icontains=busca) | duvidas.filter(mensagem__icontains=busca) | duvidas.filter(assunto__icontains=busca)
     if status in ContatoImovel.Status.values:
         duvidas = duvidas.filter(status=status)
     selecionada = get_object_or_404(ContatoImovel, pk=pk) if pk else duvidas.first()
     if pk:
         duvidas = ContatoImovel.objects.all()
+    imovel_selecionado = Imovel.objects.filter(slug=selecionada.imovel).first() if selecionada else None
     return render(request, 'admin/mensagens.html', {
         'duvidas': duvidas,
         'selecionada': selecionada,
+        'imovel_selecionado': imovel_selecionado,
         'q': busca,
         'status_selecionado': status,
         'status_choices': ContatoImovel.Status.choices,

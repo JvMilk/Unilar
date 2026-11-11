@@ -172,7 +172,8 @@ class PainelTests(TestCase):
         self.assertContains(self.client.get('/inicio/'), botao_entrar)
         self.client.force_login(self.usuario)
         resposta = self.client.get('/inicio/')
-        self.assertContains(resposta, 'bi-person-workspace')
+        self.assertContains(resposta, 'class="avatar-menu" aria-label="Meu painel"')
+        self.assertContains(resposta, '<span aria-hidden="true">P</span>')  # inicial sem foto
         self.assertNotContains(resposta, botao_entrar)
 
 
@@ -196,6 +197,8 @@ class PainelTests(TestCase):
         self.assertEqual(foto['Content-Type'], 'image/jpeg')
         self.assertEqual(Image.open(BytesIO(foto.content)).size, (320, 320))
         self.assertContains(self.client.get('/painel/'), '/painel/foto/?v=')
+        self.assertContains(self.client.get('/inicio/'), 'class="avatar-menu"')
+        self.assertContains(self.client.get('/inicio/'), '<img src="/painel/foto/?v=')
         self.client.post('/painel/foto/remover/')
         self.assertIsNone(DadosPainel.objects.get(usuario=self.usuario).foto)
 
@@ -207,6 +210,78 @@ class PainelTests(TestCase):
         resposta = self.client.post('/painel/foto/enviar/', {'foto': falso}, follow=True)
         self.assertContains(resposta, 'alert-danger')
         self.assertEqual(self.client.get('/painel/foto/').status_code, 404)
+
+
+class DuvidasTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        self.usuario = get_user_model().objects.create_user(
+            username='duvida@example.com', email='duvida@example.com', password='Teste123!')
+
+    def test_qualquer_pessoa_ve_a_pagina(self):
+        resposta = self.client.get(reverse('duvidas'))
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, 'data-imovel="kitnet-no-centro"')
+        self.assertContains(resposta, 'Entre para enviar sua dúvida')
+
+    def test_visitante_nao_envia_e_vai_para_o_login(self):
+        from .models import ContatoImovel
+        resposta = self.client.post(reverse('duvidas'), {
+            'imovel': 'kitnet-no-centro', 'assunto': 'Contas', 'mensagem': 'Inclui água?'})
+        self.assertRedirects(resposta, f"{reverse('login')}?next={reverse('duvidas')}", fetch_redirect_response=False)
+        self.assertFalse(ContatoImovel.objects.exists())
+
+    def test_usuario_logado_envia_duvida(self):
+        from .models import ContatoImovel
+        self.client.force_login(self.usuario)
+        resposta = self.client.post(reverse('duvidas'), {
+            'imovel': 'kitnet-no-centro', 'assunto': 'Contas inclusas?', 'mensagem': 'A água e a luz estão no aluguel?'})
+        self.assertRedirects(resposta, reverse('duvidas'))
+        duvida = ContatoImovel.objects.get()
+        self.assertEqual((duvida.imovel, duvida.assunto, duvida.usuario, duvida.email),
+                         ('kitnet-no-centro', 'Contas inclusas?', self.usuario, 'duvida@example.com'))
+        self.assertContains(self.client.get(reverse('duvidas')), 'Contas inclusas?')
+
+    def test_imovel_invalido_ou_campos_vazios(self):
+        from .models import ContatoImovel
+        self.client.force_login(self.usuario)
+        resposta = self.client.post(reverse('duvidas'), {'imovel': 'nao-existe', 'assunto': 'Oi', 'mensagem': 'Teste'})
+        self.assertEqual(resposta.status_code, 400)
+        self.assertContains(resposta, 'Escolha um imóvel da lista', status_code=400)
+        resposta = self.client.post(reverse('duvidas'), {'imovel': 'kitnet-no-centro', 'assunto': '', 'mensagem': ''})
+        self.assertEqual(resposta.status_code, 400)
+        self.assertContains(resposta, 'data-abrir="kitnet-no-centro"', status_code=400)
+        self.assertFalse(ContatoImovel.objects.exists())
+
+    def test_admin_ve_detalhes_e_responde_e_usuario_ve_resposta(self):
+        from django.contrib.auth import get_user_model
+        from .models import ContatoImovel, Imovel
+        self.client.force_login(self.usuario)
+        self.client.post(reverse('duvidas'), {
+            'imovel': 'kitnet-no-centro', 'assunto': 'Aceita pet?', 'mensagem': 'Tenho um gato pequeno.'})
+        duvida = ContatoImovel.objects.get()
+        admin = get_user_model().objects.create_user(
+            username='adm@example.com', email='adm@example.com', password='Teste123!', is_staff=True)
+        self.client.force_login(admin)
+        detalhe = self.client.get(reverse('admin_mensagens_detalhe', args=[duvida.pk]))
+        self.assertContains(detalhe, 'Aceita pet?')
+        self.assertContains(detalhe, 'duvida@example.com')
+        self.assertContains(detalhe, Imovel.objects.get(slug='kitnet-no-centro').titulo)
+        self.assertContains(detalhe, 'button-enviar')
+        self.client.post(reverse('admin_mensagem_responder', args=[duvida.pk]),
+                         {'acao': 'responder', 'resposta': 'Sim, pets pequenos são aceitos.'})
+        self.client.force_login(self.usuario)
+        pagina = self.client.get(reverse('duvidas'))
+        self.assertContains(pagina, 'Sim, pets pequenos são aceitos.')
+        self.assertContains(pagina, 'Respondida')
+
+    def test_login_volta_para_duvidas(self):
+        resposta = self.client.post(f"{reverse('login')}?next={reverse('duvidas')}",
+                                    {'email': 'duvida@example.com', 'senha': 'Teste123!'})
+        self.assertRedirects(resposta, reverse('duvidas'))
+        resposta = self.client.post(f"{reverse('login')}?next=https://site-malicioso.com/",
+                                    {'email': 'duvida@example.com', 'senha': 'Teste123!'})
+        self.assertRedirects(resposta, reverse('inicio'), fetch_redirect_response=False)
 
 
 class AdminAreaTests(TestCase):

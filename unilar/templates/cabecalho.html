@@ -27,7 +27,7 @@
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link" href="/suporte/">Dúvidas</a>
+                                <a class="nav-link" href="{% url 'duvidas' %}"{% if request.resolver_match.url_name == "duvidas" %} aria-current="page"{% endif %}>Dúvidas</a>
                             </li>
                         </ul>
 
@@ -40,7 +40,7 @@
                             </a>
 
                             {% if user.is_authenticated %}
-                            <a href="{% url 'painel' %}" class="btn botao-menu"><i class="bi bi-person-workspace" aria-hidden="true"></i> Meu painel</a>
+                            <a href="{% url 'painel' %}" class="avatar-menu" aria-label="Meu painel" title="Meu painel"{% if request.resolver_match.url_name == "painel" %} aria-current="page"{% endif %}>{% if avatar_foto_versao %}<img src="{% url 'painel_foto' %}?v={{ avatar_foto_versao }}" alt="" width="44" height="44">{% else %}<span aria-hidden="true">{{ avatar_inicial }}</span>{% endif %}</a>
                             {% else %}
                             <a href="{% url 'login' %}" class="btn botao-menu"{% if request.resolver_match.url_name == "login" %} aria-current="page"{% endif %}>
                                 Entrar

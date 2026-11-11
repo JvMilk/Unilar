@@ -2,9 +2,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-from .forms import ContatoImovelForm, SolicitacaoVisitaForm
+from .forms import ContatoImovelForm, DuvidaForm, SolicitacaoVisitaForm
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import CadastroForm
-from .models import Favorito, Imovel, PerfilCadastro
+from .models import ContatoImovel, Favorito, Imovel, PerfilCadastro
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login as entrar
 from django.db import IntegrityError, transaction
@@ -44,6 +46,10 @@ def login(request):
         if usuario is not None:
             entrar(request, usuario)
             request.session.set_expiry(None if request.POST.get('lembrar') else 0)
+            destino = request.POST.get('next') or request.GET.get('next')
+            if destino and url_has_allowed_host_and_scheme(
+                    destino, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+                return redirect(destino)  # volta para a página que pediu o login (ex.: Dúvidas)
             return redirect('admin_dashboard' if usuario.is_staff else 'inicio')
         messages.error(request, 'E-mail ou senha incorretos.')
     return render(request, 'login.html', {'google_login_ativo': settings.GOOGLE_LOGIN_ATIVO})
@@ -189,6 +195,43 @@ def contato_imovel_publico(request, slug):
     contato.save()
     messages.success(request, 'Sua dúvida foi enviada. A equipe UniLar responderá em breve.')
     return redirect('imovel_publico', slug=slug)
+
+
+def duvidas(request):
+    """Página Dúvidas: qualquer pessoa vê; só quem está logado envia a pergunta."""
+    imoveis = Imovel.objects.filter(status=Imovel.Status.DISPONIVEL).prefetch_related('fotos')
+    form = DuvidaForm(request.POST if request.method == 'POST' else None)
+    imovel_aberto = None
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            messages.error(request, 'Entre na sua conta para enviar sua dúvida.')
+            return redirect(f"{reverse('login')}?next={reverse('duvidas')}")
+        imovel = imoveis.filter(slug=request.POST.get('imovel', '')).first()
+        if form.is_valid() and imovel:
+            perfil = PerfilCadastro.objects.filter(usuario=request.user).first()
+            duvida = form.save(commit=False)
+            duvida.imovel = imovel.slug
+            duvida.usuario = request.user
+            duvida.email = request.user.email
+            duvida.nome = (perfil.nome if perfil else request.user.get_full_name()) or request.user.email
+            duvida.save()
+            messages.success(request, f'Dúvida sobre "{imovel.titulo}" enviada! Você verá a resposta aqui nesta página.')
+            return redirect('duvidas')
+        if imovel is None:
+            form.add_error(None, 'Escolha um imóvel da lista para enviar sua dúvida.')
+        imovel_aberto = imovel
+    minhas_duvidas = []
+    if request.user.is_authenticated:
+        titulos = dict(imoveis.values_list('slug', 'titulo'))
+        minhas_duvidas = list(ContatoImovel.objects.filter(usuario=request.user)[:5])
+        for duvida in minhas_duvidas:
+            duvida.titulo_imovel = titulos.get(duvida.imovel, duvida.imovel)
+    return render(request, 'duvidas.html', {
+        'imoveis': [dados_catalogo(item) for item in imoveis],
+        'form': form,
+        'imovel_aberto': imovel_aberto,
+        'minhas_duvidas': minhas_duvidas,
+    }, status=400 if request.method == 'POST' else 200)
 
 
 @require_POST

@@ -19,6 +19,16 @@ class ContatoImovelForm(forms.ModelForm):
         fields = ['nome', 'email', 'mensagem']
 
 
+class DuvidaForm(forms.ModelForm):
+    """Dúvida enviada pela página Dúvidas (somente usuários logados)."""
+    assunto = forms.CharField(max_length=120, label='Assunto')
+    mensagem = forms.CharField(max_length=3000, widget=forms.Textarea, label='Detalhes da dúvida')
+
+    class Meta:
+        model = ContatoImovel
+        fields = ['assunto', 'mensagem']
+
+
 class SolicitacaoVisitaForm(forms.ModelForm):
     class Meta:
         model = SolicitacaoVisita

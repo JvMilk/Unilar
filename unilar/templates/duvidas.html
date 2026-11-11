@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html><html lang="pt-br"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dúvidas | {{ configuracao_site.nome_site|default:"UniLar" }}</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="{% static 'css/style.css' %}?v=20261111c" rel="stylesheet"></head>
+<body><div class="pagina">{% include "cabecalho.html" %}
+<main class="duvidas-unilar">
+  <section class="duvidas-intro">
+    <div>
+      <p class="duvidas-sobretitulo">CENTRAL DE DÚVIDAS</p>
+      <h1>Ficou com alguma dúvida? <span>A gente te ajuda.</span></h1>
+      <p>Faça sua pergunta e tire suas dúvidas sobre qualquer imóvel: valor do aluguel, contas inclusas, visita, contrato ou vizinhança. A equipe UniLar responde e você acompanha a resposta aqui mesmo.</p>
+    </div>
+    <ol class="duvidas-passos">
+      <li><span>1</span><div><strong>Escolha o imóvel</strong><small>Clique no imóvel da lista abaixo</small></div></li>
+      <li><span>2</span><div><strong>Escreva sua dúvida</strong><small>Um assunto curto e os detalhes</small></div></li>
+      <li><span>3</span><div><strong>Receba a resposta</strong><small>Ela aparece nesta página</small></div></li>
+    </ol>
+  </section>
+
+  {% for message in messages %}<p role="status" class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} duvidas-alerta">{{ message }}</p>{% endfor %}
+
+  <div class="duvidas-colunas">
+    <section class="duvidas-lista-bloco" aria-labelledby="tituloImoveis">
+      <div class="duvidas-lista-topo">
+        <h2 id="tituloImoveis">Sobre qual imóvel é sua dúvida?</h2>
+        <label class="duvidas-busca"><i class="bi bi-search" aria-hidden="true"></i><input type="search" id="buscaDuvidas" placeholder="Buscar imóvel" aria-label="Buscar imóvel na lista"></label>
+      </div>
+      <ul class="duvidas-imoveis" id="listaDuvidas">
+        {% for imovel in imoveis %}
+        <li>
+          <button type="button" class="duvida-imovel" data-bs-toggle="modal" data-bs-target="#modalDuvida"
+                  data-imovel="{{ imovel.slug }}" data-titulo="{{ imovel.titulo }}"
+                  data-local="{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}"
+                  data-imagem="{% if imovel.imagem_url %}{{ imovel.imagem_url }}{% else %}{% static imovel.imagem %}{% endif %}">
+            {% if imovel.imagem_url %}<img src="{{ imovel.imagem_url }}" alt="" loading="lazy">{% else %}<img src="{% static imovel.imagem %}" alt="" loading="lazy">{% endif %}
+            <span class="duvida-imovel-texto">
+              <strong>{{ imovel.titulo }}</strong>
+              <small><i class="bi bi-geo-alt" aria-hidden="true"></i> {% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }} · R$ {{ imovel.preco }}/mês</small>
+              <span>{{ imovel.descricao|default:imovel.detalhes|truncatechars:110 }}</span>
+            </span>
+            <span class="duvida-imovel-acao"><i class="bi bi-chat-dots" aria-hidden="true"></i> Perguntar</span>
+          </button>
+        </li>
+        {% empty %}
+        <li class="duvidas-vazio">Nenhum imóvel disponível no momento.</li>
+        {% endfor %}
+      </ul>
+      <p class="duvidas-vazio" id="buscaVazia" hidden>Nenhum imóvel encontrado com esse nome.</p>
+    </section>
+
+    <aside class="duvidas-lateral">
+      {% if user.is_authenticated %}
+      <h2>Minhas dúvidas</h2>
+      {% for duvida in minhas_duvidas %}
+      <article class="minha-duvida">
+        <div class="minha-duvida-topo"><span class="duvida-status duvida-status-{{ duvida.status }}">{{ duvida.get_status_display }}</span><time>{{ duvida.criado_em|date:"d/m/Y" }}</time></div>
+        <strong>{{ duvida.assunto|default:"Dúvida" }}</strong>
+        <small>{{ duvida.titulo_imovel }}</small>
+        {% if duvida.resposta and duvida.status == 'respondida' %}<p class="minha-duvida-resposta"><i class="bi bi-reply-fill" aria-hidden="true"></i> {{ duvida.resposta|linebreaksbr }}</p>{% endif %}
+      </article>
+      {% empty %}
+      <p class="duvidas-lateral-texto">Você ainda não enviou dúvidas. Escolha um imóvel ao lado para fazer sua primeira pergunta.</p>
+      {% endfor %}
+      {% else %}
+      <h2>Quer perguntar?</h2>
+      <p class="duvidas-lateral-texto">Qualquer pessoa pode ver os imóveis, mas para enviar uma dúvida é preciso entrar na sua conta. Assim conseguimos te responder.</p>
+      <a class="duvidas-botao-secundario" href="{% url 'login' %}?next={% url 'duvidas' %}"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Entrar</a>
+      <a class="duvidas-link" href="{% url 'cadastro' %}">Ainda não tem conta? Cadastre-se</a>
+      {% endif %}
+    </aside>
+  </div>
+</main></div>
+
+<div class="modal fade" id="modalDuvida" tabindex="-1" aria-labelledby="modalDuvidaTitulo" aria-hidden="true"
+     {% if imovel_aberto %}data-abrir="{{ imovel_aberto.slug }}"{% endif %}>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content duvida-modal">
+      <div class="duvida-modal-topo">
+        <img id="modalDuvidaImagem" src="" alt="">
+        <div><p>Dúvida sobre</p><h2 id="modalDuvidaTitulo">Imóvel</h2><small id="modalDuvidaLocal"></small></div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      {% if user.is_authenticated %}
+      <form method="post" action="{% url 'duvidas' %}" class="duvida-form">{% csrf_token %}
+        <input type="hidden" name="imovel" id="modalDuvidaImovel" value="{{ imovel_aberto.slug|default:'' }}">
+        {% for erro in form.non_field_errors %}<p class="duvida-erro">{{ erro }}</p>{% endfor %}
+        <label for="duvidaAssunto">Assunto</label>
+        <input type="text" id="duvidaAssunto" name="assunto" maxlength="120" required placeholder="Ex.: As contas de água e luz estão inclusas?" value="{{ form.assunto.value|default_if_none:'' }}">
+        {% for erro in form.assunto.errors %}<p class="duvida-erro">{{ erro }}</p>{% endfor %}
+        <label for="duvidaMensagem">Descreva sua dúvida</label>
+        <textarea id="duvidaMensagem" name="mensagem" rows="5" maxlength="3000" required placeholder="Conte com mais detalhes o que você quer saber sobre este imóvel.">{{ form.mensagem.value|default_if_none:'' }}</textarea>
+        <small class="duvida-contador"><span id="duvidaContador">0</span>/3000</small>
+        {% for erro in form.mensagem.errors %}<p class="duvida-erro">{{ erro }}</p>{% endfor %}
+        <button type="submit" class="duvida-enviar">Enviar
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-arrow-up-fill" viewBox="0 0 16 16" aria-hidden="true">
+            <path fill-rule="evenodd" d="M15.854.146a.5.5 0 0 1 .11.54L13.026 8.03A4.5 4.5 0 0 0 8 12.5c0 .5 0 1.5-.773.36l-1.59-2.498L.644 7.184l-.002-.001-.41-.261a.5.5 0 0 1 .083-.886l.452-.18.001-.001L15.314.035a.5.5 0 0 1 .54.111M6.637 10.07l7.494-7.494.471-1.178-1.178.471L5.93 9.363l.338.215a.5.5 0 0 1 .154.154z"/>
+            <path fill-rule="evenodd" d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.354-5.354a.5.5 0 0 0-.722.016l-1.149 1.25a.5.5 0 1 0 .737.676l.28-.305V14a.5.5 0 0 0 1 0v-1.793l.396.397a.5.5 0 0 0 .708-.708z"/>
+          </svg>
+        </button>
+      </form>
+      {% else %}
+      <div class="duvida-login">
+        <i class="bi bi-lock" aria-hidden="true"></i>
+        <h3>Entre para enviar sua dúvida</h3>
+        <p>Para que a equipe UniLar consiga te responder, é preciso estar logado.</p>
+        <a class="duvida-enviar" href="{% url 'login' %}?next={% url 'duvidas' %}">Entrar na minha conta <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i></a>
+        <a class="duvidas-link" href="{% url 'cadastro' %}">Criar uma conta grátis</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/duvidas.js' %}?v=1"></script>
+</body></html>

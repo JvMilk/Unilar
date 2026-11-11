@@ -13,7 +13,7 @@
     <div class="inbox-items">
       {% for duvida in duvidas %}<a class="inbox-item {% if selecionada.pk == duvida.pk %}selected{% endif %}" href="{% url 'admin_mensagens_detalhe' duvida.pk %}">
         <span class="inbox-item-top"><strong>{{ duvida.nome }}</strong><time>{{ duvida.criado_em|date:"d/m/Y" }}</time></span>
-        <span class="inbox-email">{{ duvida.email }}</span><span class="inbox-preview">{{ duvida.mensagem|truncatechars:85 }}</span>
+        <span class="inbox-email">{{ duvida.email }}</span><span class="inbox-preview">{% if duvida.assunto %}<strong>{{ duvida.assunto }}</strong> · {% endif %}{{ duvida.mensagem|truncatechars:85 }}</span>
         <span class="status status-{{ duvida.status }}">{{ duvida.get_status_display }}</span>
       </a>{% empty %}<p class="empty-row">Nenhuma mensagem encontrada.</p>{% endfor %}
     </div>
@@ -21,13 +21,29 @@
   <div class="inbox-detail">
     {% if selecionada %}
     <div class="message-heading"><div><span class="status status-{{ selecionada.status }}">{{ selecionada.get_status_display }}</span><h2>{{ selecionada.nome }}</h2><a href="mailto:{{ selecionada.email }}">{{ selecionada.email }}</a></div><time>{{ selecionada.criado_em|date:"d/m/Y H:i" }}</time></div>
-    <div class="message-meta"><span><i class="bi bi-house"></i> Imóvel: {{ selecionada.imovel }}</span></div>
-    <article class="message-body">{{ selecionada.mensagem|linebreaksbr }}</article>
-    {% if selecionada.resposta %}<div class="saved-reply"><strong>Resposta salva{% if selecionada.respondido_em %} · {{ selecionada.respondido_em|date:"d/m/Y H:i" }}{% endif %}</strong><p>{{ selecionada.resposta|linebreaksbr }}</p></div>{% endif %}
-    <form class="reply-form" method="post" action="{% url 'admin_mensagem_responder' selecionada.pk %}">{% csrf_token %}
-      <label for="resposta"><strong>Responder ao visitante</strong><textarea id="resposta" name="resposta" rows="5" placeholder="Escreva sua resposta...">{% if selecionada.status == 'pendente' %}{{ selecionada.resposta }}{% endif %}</textarea></label>
-      <div class="form-actions"><button class="button button-primary" name="acao" value="responder"><i class="bi bi-send"></i> Enviar resposta</button><button class="button button-light" name="acao" value="pendente">Marcar pendente</button></div>
-    </form>
+    <dl class="message-facts">
+      <dt><i class="bi bi-house" aria-hidden="true"></i> Imóvel</dt>
+      <dd>{% if imovel_selecionado %}<a href="{% url 'imovel_publico' imovel_selecionado.slug %}" target="_blank" rel="noopener">{{ imovel_selecionado.titulo }} <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i></a>{% else %}{{ selecionada.imovel }}{% endif %}</dd>
+      <dt><i class="bi bi-chat-left-text" aria-hidden="true"></i> Assunto</dt>
+      <dd><strong>{{ selecionada.assunto|default:"Sem assunto" }}</strong></dd>
+      <dt><i class="bi bi-text-paragraph" aria-hidden="true"></i> Descrição</dt>
+      <dd class="message-body">{{ selecionada.mensagem|linebreaksbr }}</dd>
+    </dl>
+    {% if selecionada.resposta %}<div class="saved-reply"><strong><i class="bi bi-check2-circle" aria-hidden="true"></i> Resposta enviada{% if selecionada.respondido_em %} · {{ selecionada.respondido_em|date:"d/m/Y H:i" }}{% endif %}</strong><p>{{ selecionada.resposta|linebreaksbr }}</p></div>{% endif %}
+    <details class="reply-panel"{% if selecionada.status == 'pendente' and selecionada.resposta %} open{% endif %}>
+      <summary class="button button-primary"><i class="bi bi-reply-fill" aria-hidden="true"></i> {% if selecionada.resposta %}Editar resposta{% else %}Responder{% endif %}</summary>
+      <form class="reply-form" method="post" action="{% url 'admin_mensagem_responder' selecionada.pk %}">{% csrf_token %}
+        <label for="resposta"><strong>Sua resposta para {{ selecionada.nome }}</strong><textarea id="resposta" name="resposta" rows="6" required placeholder="Escreva a resposta. Ela aparecerá para a pessoa na página Dúvidas.">{{ selecionada.resposta }}</textarea></label>
+        <div class="form-actions"><button class="button button-light" name="acao" value="pendente" formnovalidate>Marcar pendente</button>
+          <button class="button-enviar" name="acao" value="responder">Enviar
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-arrow-up-fill" viewBox="0 0 16 16" aria-hidden="true">
+              <path fill-rule="evenodd" d="M15.854.146a.5.5 0 0 1 .11.54L13.026 8.03A4.5 4.5 0 0 0 8 12.5c0 .5 0 1.5-.773.36l-1.59-2.498L.644 7.184l-.002-.001-.41-.261a.5.5 0 0 1 .083-.886l.452-.18.001-.001L15.314.035a.5.5 0 0 1 .54.111M6.637 10.07l7.494-7.494.471-1.178-1.178.471L5.93 9.363l.338.215a.5.5 0 0 1 .154.154z"/>
+              <path fill-rule="evenodd" d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.354-5.354a.5.5 0 0 0-.722.016l-1.149 1.25a.5.5 0 1 0 .737.676l.28-.305V14a.5.5 0 0 0 1 0v-1.793l.396.397a.5.5 0 0 0 .708-.708z"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </details>
     <form method="post" action="{% url 'admin_mensagem_responder' selecionada.pk %}" data-confirm="Excluir esta mensagem?">{% csrf_token %}<button class="button button-danger" name="acao" value="excluir"><i class="bi bi-trash3"></i> Excluir mensagem</button></form>
     {% else %}<div class="empty-inbox"><i class="bi bi-chat-square-text"></i><h2>Selecione uma mensagem</h2><p>As mensagens recebidas aparecerão aqui.</p></div>{% endif %}
   </div>
