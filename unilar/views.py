@@ -165,20 +165,52 @@ def dados_catalogo(imovel, salvos=None):
     }
 
 
+def formatar_reais(valor):
+    return f'{valor:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
+
+
+def contexto_detalhe(request, imovel):
+    """Organiza os dados do cadastro no padrão da página de detalhes (igual para todos os imóveis)."""
+    fotos = [foto.imagem.url for foto in imovel.fotos.all()]
+    if not fotos:
+        fotos = [static(imovel.imagem_padrao or 'imagens/imovel-1.jpg')]
+    mesma_cidade = Imovel.objects.filter(status=Imovel.Status.DISPONIVEL, cidade=imovel.cidade)
+    media = mesma_cidade.aggregate(media=Avg('preco'))['media'] if mesma_cidade.count() >= 3 else None
+    anunciante = None
+    if imovel.proprietario:
+        perfil = PerfilCadastro.objects.filter(usuario=imovel.proprietario).first()
+        anunciante = {
+            'nome': (perfil.nome if perfil else imovel.proprietario.get_full_name()) or 'Equipe UniLar',
+            'desde': imovel.proprietario.date_joined.year,
+        }
+    descricao = imovel.descricao.strip()
+    endereco = f'{imovel.endereco}, {imovel.bairro}, {imovel.cidade}'
+    return {
+        'imovel': imovel,
+        'fotos': fotos,
+        'favorito': imovel.slug in slugs_favoritos(request),
+        'resumo': imovel.resumo_espaco(),
+        'destaques': imovel.destaques(),
+        'comodidades': imovel.lista_comodidades(),
+        'contas': imovel.contas_inclusas(),
+        'preco_formatado': formatar_reais(imovel.preco),
+        'abaixo_da_media': media is not None and imovel.preco < media,
+        'anunciante': anunciante or {'nome': 'Equipe UniLar', 'desde': None},
+        'descricao_longa': len(descricao) > 360 or descricao.count('\n') > 5,
+        'mapa_url': 'https://www.google.com/maps/search/?api=1&query=' + quote_plus(endereco),
+    }
+
+
 def imovel_publico(request, slug):
     imovel = get_object_or_404(
-        Imovel.objects.prefetch_related('fotos'),
+        Imovel.objects.prefetch_related('fotos').select_related('proprietario'),
         slug=slug,
         status=Imovel.Status.DISPONIVEL,
     )
     request.session['visitados'] = list(dict.fromkeys(
         request.session.get('visitados', []) + [slug]
     ))
-    return render(request, 'imovel_publico.html', {
-        'imovel': imovel,
-        'fotos': imovel.fotos.all(),
-        'favorito': slug in slugs_favoritos(request),
-    })
+    return render(request, 'imovel_publico.html', contexto_detalhe(request, imovel))
 
 
 @require_POST
@@ -186,10 +218,8 @@ def contato_imovel_publico(request, slug):
     imovel = get_object_or_404(Imovel, slug=slug, status=Imovel.Status.DISPONIVEL)
     form = ContatoImovelForm(request.POST)
     if not form.is_valid():
-        return render(request, 'imovel_publico.html', {
-            'imovel': imovel, 'fotos': imovel.fotos.all(), 'form': form,
-            'favorito': slug in slugs_favoritos(request),
-        }, status=400)
+        return render(request, 'imovel_publico.html', {**contexto_detalhe(request, imovel), 'form': form},
+                      status=400)
     contato = form.save(commit=False)
     contato.imovel = slug
     contato.save()
@@ -215,6 +245,11 @@ def duvidas(request):
             duvida.email = request.user.email
             duvida.nome = (perfil.nome if perfil else request.user.get_full_name()) or request.user.email
             duvida.save()
+            destino = request.POST.get('next', '')
+            if destino and url_has_allowed_host_and_scheme(
+                    destino, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+                messages.success(request, 'Dúvida enviada! A resposta aparece na página Dúvidas, em "Minhas dúvidas".')
+                return redirect(destino)
             messages.success(request, f'Dúvida sobre "{imovel.titulo}" enviada! Você verá a resposta aqui nesta página.')
             return redirect('duvidas')
         if imovel is None:
@@ -252,11 +287,8 @@ def detalhe_imovel(request):
     visitados = request.session.get('visitados', [])
     if IMOVEL not in visitados:
         request.session['visitados'] = visitados + [IMOVEL]
-    return render(request, 'imovel.html', {
-        'favorito': IMOVEL in slugs_favoritos(request),
-        'imovel': imovel,
-        'fotos': imovel.fotos.all(),
-    })
+    # Mesmo modelo de página de todos os outros imóveis.
+    return render(request, 'imovel_publico.html', contexto_detalhe(request, imovel))
 
 
 def favoritos(request):
@@ -300,6 +332,9 @@ from .models import DadosPainel
 from .forms import FotoPerfilForm, PerfilPainelForm
 from django.http import HttpResponse
 from django.utils import timezone
+from django.db.models import Avg
+from django.templatetags.static import static
+from urllib.parse import quote_plus
 
 
 @login_required(login_url='login')

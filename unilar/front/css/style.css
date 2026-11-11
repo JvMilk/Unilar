@@ -1573,3 +1573,115 @@ img.painel-avatar { object-fit: cover; padding: 0; }
     .duvida-imovel-acao { grid-column: 1 / -1; justify-content: center; }
     .duvidas-busca, .duvidas-busca input { width: 100%; }
 }
+
+/* Cartão do imóvel: foto e título levam para a página de detalhes */
+.property-image > a { display: block; height: 100%; }
+.property-link { color: inherit; text-decoration: none; }
+.property-link:hover { color: var(--azul); }
+
+/* ==================================================
+   PÁGINA DE DETALHES DO IMÓVEL (modelo único)
+   ================================================== */
+.anuncio { max-width: 1200px; margin: 0 auto; padding: 26px clamp(16px, 3vw, 40px) 64px; color: var(--azul-escuro); }
+.anuncio-alerta { border-radius: 12px; }
+.anuncio-topo { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.anuncio-voltar { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 6px; color: var(--azul); font-size: 14px; font-weight: 600; text-decoration: none; }
+.anuncio-topo h1 { margin: 0; font-size: clamp(24px, 3vw, 32px); font-weight: 800; letter-spacing: -.5px; text-wrap: balance; }
+.anuncio-acoes { display: flex; gap: 6px; }
+.anuncio-acoes form { margin: 0; }
+.anuncio-acao { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border: 0; border-radius: 10px; background: transparent; color: var(--azul-escuro); font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.anuncio-acao:hover { background: #eef3ff; }
+.anuncio-acao .bi-heart-fill { color: #e5345b; }
+
+/* Galeria */
+.galeria { position: relative; display: grid; gap: 8px; height: clamp(260px, 42vw, 440px); margin-bottom: 30px; border-radius: 18px; overflow: hidden; }
+.galeria-5 { grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.galeria-5 .galeria-foto:first-child { grid-row: 1 / 3; }
+.galeria-4 { grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.galeria-4 .galeria-foto:first-child { grid-row: 1 / 3; }
+.galeria-4 .galeria-foto:nth-child(4) { grid-column: 2 / 4; }
+.galeria-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+.galeria-3 .galeria-foto:first-child { grid-row: 1 / 3; }
+.galeria-2 { grid-template-columns: 1fr 1fr; }
+.galeria-1 { grid-template-columns: 1fr; }
+.galeria-foto { padding: 0; border: 0; background: #dfe7f7; overflow: hidden; cursor: zoom-in; }
+.galeria-foto img { width: 100%; height: 100%; object-fit: cover; transition: filter .2s ease, transform .4s ease; }
+.galeria-foto:hover img { filter: brightness(.88); transform: scale(1.02); }
+.galeria-foto:focus-visible { outline: 3px solid var(--azul); outline-offset: -3px; }
+.galeria-todas { position: absolute; right: 16px; bottom: 16px; display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid var(--azul-escuro); border-radius: 10px; background: #fff; color: var(--azul-escuro); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.galeria-todas:hover { background: #f4f7ff; }
+.galeria-completa { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+.galeria-completa img { width: 100%; border-radius: 12px; object-fit: cover; scroll-margin-top: 8px; }
+
+/* Colunas */
+.anuncio-colunas { display: grid; grid-template-columns: minmax(0, 1fr) 370px; gap: clamp(28px, 5vw, 72px); align-items: start; }
+.anuncio-info > section { padding: 24px 0; border-bottom: 1px solid var(--borda); }
+.anuncio-info > section:first-child { padding-top: 0; }
+.anuncio-resumo h2 { margin: 0 0 4px; font-size: 22px; font-weight: 800; }
+.anuncio-resumo p { margin: 0; color: var(--texto-suave); font-size: 15px; }
+.anuncio-selos { display: flex; flex-wrap: wrap; gap: 10px; }
+.anuncio-selos span { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--borda); border-radius: 14px; background: #f6f9ff; font-size: 14px; font-weight: 600; }
+.anuncio-selos i { color: var(--roxo); font-size: 18px; }
+.anuncio-anunciante { display: flex; align-items: center; gap: 14px; }
+.anuncio-anunciante-avatar { display: grid; place-items: center; width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; background: linear-gradient(135deg, var(--azul), var(--roxo)); color: #fff; font-size: 20px; font-weight: 800; }
+.anuncio-anunciante strong { display: block; font-size: 16px; }
+.anuncio-anunciante small { color: var(--texto-suave); font-size: 13px; }
+.anuncio-destaques { display: grid; gap: 22px; }
+.anuncio-destaque { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 16px; }
+.anuncio-destaque > i { font-size: 24px; color: var(--azul-escuro); line-height: 1; }
+.anuncio-destaque strong { display: block; font-size: 16px; margin-bottom: 2px; }
+.anuncio-destaque p { margin: 0; color: var(--texto-suave); font-size: 14px; line-height: 1.5; }
+.anuncio-info h2 { margin: 0 0 14px; font-size: 21px; font-weight: 800; }
+.anuncio-texto { color: #2c3a66; font-size: 15px; line-height: 1.65; max-width: 68ch; }
+.anuncio-texto p:last-child { margin-bottom: 0; }
+.anuncio-texto.recolhido { max-height: 10.5em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+.anuncio-mostrar-mais { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; padding: 10px 18px; border: 0; border-radius: 10px; background: #eef1f8; color: var(--azul-escuro); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.anuncio-mostrar-mais:hover { background: #e2e8f5; }
+.anuncio-comodidades { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; }
+.anuncio-comodidades li { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+.anuncio-comodidades i { font-size: 20px; color: var(--azul); }
+.anuncio-local { display: flex; gap: 8px; margin: 0 0 6px; font-weight: 600; }
+.anuncio-local i { color: var(--roxo); }
+.anuncio-proximidades { margin: 0 0 12px; color: var(--texto-suave); }
+.anuncio-mapa { display: inline-flex; align-items: center; gap: 8px; color: var(--azul); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Cartão de preço (acompanha a rolagem) */
+.anuncio-lateral { position: sticky; top: 20px; display: grid; gap: 14px; }
+.anuncio-selo-preco { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-radius: 16px; background: #fff; box-shadow: 0 6px 22px rgb(7 25 107 / 10%); font-size: 14px; font-weight: 600; }
+.anuncio-selo-preco i { color: #17a35b; font-size: 20px; }
+.anuncio-preco { display: grid; gap: 14px; padding: 24px; border: 1px solid var(--borda); border-radius: 20px; background: #fff; box-shadow: 0 10px 34px rgb(7 25 107 / 12%); }
+.anuncio-preco-valor { margin: 0; }
+.anuncio-preco-valor strong { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.anuncio-preco-valor span { color: var(--texto-suave); font-size: 15px; }
+.anuncio-preco-itens { margin: 0; border: 1px solid var(--borda); border-radius: 14px; overflow: hidden; }
+.anuncio-preco-itens div { display: flex; justify-content: space-between; gap: 12px; padding: 11px 14px; font-size: 14px; }
+.anuncio-preco-itens div + div { border-top: 1px solid var(--borda); }
+.anuncio-preco-itens dt { color: var(--texto-suave); font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; align-self: center; }
+.anuncio-preco-itens dd { margin: 0; font-weight: 600; text-align: right; }
+.anuncio-botao { display: inline-flex; align-items: center; justify-content: center; gap: 9px; width: 100%; min-height: 52px; padding: 12px 18px; border: 0; border-radius: 14px; color: #fff; background: linear-gradient(100deg, var(--azul), #293aff, var(--roxo)); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; transition: filter .2s ease; }
+.anuncio-botao:hover, .anuncio-botao:focus-visible { color: #fff; filter: brightness(1.08); }
+.anuncio-preco form { margin: 0; }
+.anuncio-botao-secundario { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px 18px; border: 1px solid var(--borda); border-radius: 14px; background: #fff; color: var(--azul-escuro); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.anuncio-botao-secundario:hover { border-color: var(--azul); }
+.anuncio-botao-secundario .bi-heart-fill { color: #e5345b; }
+.anuncio-preco-nota { margin: 0; color: var(--texto-suave); font-size: 13px; text-align: center; }
+.anuncio-barra-celular { display: none; }
+
+@media (max-width: 991.98px) {
+    .anuncio-colunas { grid-template-columns: 1fr; }
+    .anuncio-lateral { position: static; }
+    .anuncio { padding-bottom: 110px; }
+    .anuncio-barra-celular { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); border-top: 1px solid var(--borda); background: #fff; box-shadow: 0 -6px 20px rgb(7 25 107 / 10%); }
+    .anuncio-barra-celular p { margin: 0; color: var(--texto-suave); }
+    .anuncio-barra-celular strong { color: var(--azul-escuro); font-size: 18px; }
+    .anuncio-barra-celular .anuncio-botao { width: auto; min-height: 46px; }
+}
+@media (max-width: 575.98px) {
+    .galeria { height: 260px; grid-template-columns: 1fr !important; grid-template-rows: 1fr !important; }
+    .galeria .galeria-foto:not(:first-child) { display: none; }
+    .anuncio-comodidades { grid-template-columns: 1fr; }
+    .anuncio-acao span { display: none; }
+}
+
+/* O cartão de preço só "gruda" se a moldura da página não criar uma área de rolagem própria */
+.pagina:has(.anuncio) { overflow: clip; }

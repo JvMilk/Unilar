@@ -11,7 +11,14 @@
   {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
   <section class="form-section"><h2><i class="bi bi-house"></i> Informações do imóvel</h2><div class="form-grid">
     {% for field in form %}
-      {% if field.name != 'fotos' %}
+      {% if field.name == 'comodidades' %}
+      <fieldset class="form-field span-2 amenities-field">
+        <legend>{{ field.label }}</legend>
+        <div class="amenities-grid">{% for opcao in field %}<label class="amenity-option">{{ opcao.tag }} <span>{{ opcao.choice_label }}</span></label>{% endfor %}</div>
+        <small>{{ field.help_text }}</small>
+        {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+      </fieldset>
+      {% elif field.name != 'fotos' %}
       <label class="form-field {% if field.name == 'descricao' or field.name == 'informacoes_adicionais' %}span-2{% endif %}" for="{{ field.id_for_label }}">
         <span>{{ field.label }}{% if field.field.required %} <b>*</b>{% endif %}</span>{{ field }}
         {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}

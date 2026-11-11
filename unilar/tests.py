@@ -520,6 +520,36 @@ class AdminAreaTests(TestCase):
             self.assertFalse(Imovel.objects.filter(pk=imovel.pk).exists())
             self.assertFalse(Path(arquivo_foto).exists())
 
+    def test_cadastro_organiza_pagina_de_detalhes_no_padrao(self):
+        response = self.client.post(reverse('admin_imovel_novo'), self.dados_imovel(
+            titulo='Apartamento padrão', capacidade='3', camas='2', proximidades='em frente ao shopping',
+            comodidades=['mobiliado', 'wifi', 'agua_inclusa', 'luz_inclusa'],
+        ))
+        self.assertRedirects(response, reverse('admin_imoveis'))
+        imovel = Imovel.objects.get(titulo='Apartamento padrão')
+        self.assertEqual(imovel.comodidades, ['mobiliado', 'wifi', 'agua_inclusa', 'luz_inclusa'])
+        pagina = self.client.get(reverse('imovel_publico', args=[imovel.slug]))
+        self.assertContains(pagina, 'Apartamento inteiro em Patos de Minas')
+        self.assertContains(pagina, '3 pessoas · 2 quartos · 2 camas · 1 banheiro · 55 m²')
+        self.assertContains(pagina, 'Em Patos de Minas, em frente ao shopping.')
+        self.assertContains(pagina, 'Contas inclusas no aluguel')
+        self.assertContains(pagina, 'Pronto para morar')
+        self.assertContains(pagina, 'R$ 980,50')
+        self.assertContains(pagina, 'class="anuncio-lateral"')
+        # Campos novos são opcionais: sem eles, valem os padrões.
+        self.client.post(reverse('admin_imovel_novo'), self.dados_imovel(titulo='Sem extras'))
+        sem_extras = Imovel.objects.get(titulo='Sem extras')
+        self.assertEqual((sem_extras.capacidade, sem_extras.camas, sem_extras.comodidades), (1, 1, []))
+        self.assertEqual(self.client.get(reverse('imovel_publico', args=[sem_extras.slug])).status_code, 200)
+
+    def test_duvida_enviada_da_pagina_do_imovel_volta_para_ela(self):
+        imovel = Imovel.objects.get(slug='kitnet-no-centro')
+        url = reverse('imovel_publico', args=[imovel.slug])
+        resposta = self.client.post(reverse('duvidas'), {
+            'imovel': imovel.slug, 'assunto': 'Garagem', 'mensagem': 'Tem vaga?', 'next': url})
+        self.assertRedirects(resposta, url, fetch_redirect_response=False)
+        self.assertEqual(ContatoImovel.objects.get(assunto='Garagem').imovel, imovel.slug)
+
     def test_edicoes_do_catalogo_refletem_no_detalhe_publico_legado(self):
         imovel = Imovel.objects.get(slug='kitnet-no-centro')
         response = self.client.post(

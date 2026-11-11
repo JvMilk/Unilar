@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 from django import forms
 from django.core.cache import cache
 
-from .models import ConfiguracaoSite, ContatoImovel, Imovel, SolicitacaoVisita
+from .models import COMODIDADES, ConfiguracaoSite, ContatoImovel, Imovel, SolicitacaoVisita
 
 
 class ContatoImovelForm(forms.ModelForm):
@@ -229,6 +229,13 @@ class MultipleImageField(forms.ImageField):
 
 
 class AdminImovelForm(forms.ModelForm):
+    comodidades = forms.MultipleChoiceField(
+        choices=[(chave, nome) for chave, nome, _ in COMODIDADES],
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label='Comodidades e contas inclusas',
+        help_text='Marque tudo o que o imóvel oferece. A página do anúncio monta os destaques a partir disso.',
+    )
     fotos = MultipleImageField(
         required=False,
         label='Adicionar fotos',
@@ -238,10 +245,15 @@ class AdminImovelForm(forms.ModelForm):
     class Meta:
         model = Imovel
         fields = [
-            'titulo', 'descricao', 'preco', 'endereco', 'bairro', 'cidade',
-            'quartos', 'banheiros', 'vagas', 'area', 'tipo',
-            'informacoes_adicionais', 'status', 'proprietario',
+            'titulo', 'descricao', 'preco', 'endereco', 'bairro', 'cidade', 'proximidades',
+            'tipo', 'capacidade', 'quartos', 'camas', 'banheiros', 'vagas', 'area',
+            'comodidades', 'informacoes_adicionais', 'status', 'proprietario',
         ]
+        labels = {
+            'capacidade': 'Quantas pessoas',
+            'proximidades': 'O que tem por perto',
+            'informacoes_adicionais': 'Regras e informações adicionais',
+        }
         widgets = {
             'descricao': forms.Textarea(attrs={'rows': 4}),
             'informacoes_adicionais': forms.Textarea(attrs={'rows': 3}),
@@ -250,7 +262,21 @@ class AdminImovelForm(forms.ModelForm):
             'banheiros': forms.NumberInput(attrs={'min': '0'}),
             'vagas': forms.NumberInput(attrs={'min': '0'}),
             'area': forms.NumberInput(attrs={'min': '1'}),
+            'capacidade': forms.NumberInput(attrs={'min': '1'}),
+            'camas': forms.NumberInput(attrs={'min': '0'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for campo in ('capacidade', 'camas'):
+            self.fields[campo].required = False
+
+    def clean_capacidade(self):
+        return self.cleaned_data.get('capacidade') or 1
+
+    def clean_camas(self):
+        valor = self.cleaned_data.get('camas')
+        return 1 if valor is None else valor
 
     def clean_fotos(self):
         fotos = self.cleaned_data['fotos']

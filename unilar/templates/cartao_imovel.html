@@ -1,7 +1,7 @@
 {% load static %}
 <article class="property-card">
-<div class="property-image">{% if imovel.imagem_url %}<img src="{{ imovel.imagem_url }}" alt="{{ imovel.titulo }}">{% else %}<img src="{% static imovel.imagem %}" alt="{{ imovel.titulo }}">{% endif %}<span class="tag">{{ imovel.etiqueta|default:imovel.tipo }}</span>
+<div class="property-image"><a href="{% url 'imovel_publico' imovel.slug %}" tabindex="-1" aria-hidden="true">{% if imovel.imagem_url %}<img src="{{ imovel.imagem_url }}" alt="">{% else %}<img src="{% static imovel.imagem %}" alt="">{% endif %}</a><span class="tag">{{ imovel.etiqueta|default:imovel.tipo }}</span>
 <form method="post" action="{% url 'favoritar_catalogo' imovel.slug %}">{% csrf_token %}
 <button class="heart" type="submit" aria-label="Alternar favorito: {{ imovel.titulo }}" aria-pressed="{{ imovel.favorito|yesno:'true,false' }}">{{ imovel.favorito|yesno:'♥,♡' }}</button></form></div>
-<div class="property-info"><h3>{{ imovel.titulo }}</h3><p class="location">{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</p><p class="price">R$ {{ imovel.preco }}<span>/mês</span></p><p class="details">{{ imovel.detalhes }}</p>
+<div class="property-info"><h3><a class="property-link" href="{% url 'imovel_publico' imovel.slug %}">{{ imovel.titulo }}</a></h3><p class="location">{% if imovel.bairro %}{{ imovel.bairro }}, {% endif %}{{ imovel.cidade }}</p><p class="price">R$ {{ imovel.preco }}<span>/mês</span></p><p class="details">{{ imovel.detalhes }}</p>
 <a href="{% url 'imovel_publico' imovel.slug %}">Ver detalhes →</a></div></article>

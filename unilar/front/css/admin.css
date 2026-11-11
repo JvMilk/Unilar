@@ -258,3 +258,12 @@
 .button-enviar:hover, .button-enviar:focus-visible { filter: brightness(1.08); transform: translateY(-1px); }
 .button-enviar svg { width: 17px; height: 17px; }
 @media (max-width: 760px) { .message-facts { grid-template-columns: 1fr; gap: 4px; } .message-facts dd { margin-bottom: 10px; } }
+
+/* Cadastro de imóvel: comodidades */
+.amenities-field { margin: 0; padding: 0; border: 0; }
+.amenities-field legend { margin-bottom: 8px; font-size: 11px; font-weight: 650; color: #59667e; }
+.amenities-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.amenity-option { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border: 1px solid #dfe4ed; border-radius: 10px; background: #fff; color: var(--admin-ink); font-size: 12px; font-weight: 500; cursor: pointer; }
+.amenity-option:hover { border-color: #b8c8f1; }
+.amenity-option:has(input:checked) { border-color: var(--admin-purple, #7627f4); background: #f5f0ff; }
+.amenity-option input { accent-color: var(--admin-purple, #7627f4); }

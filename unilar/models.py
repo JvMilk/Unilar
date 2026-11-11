@@ -70,6 +70,27 @@ class DadosPainel(models.Model):
     foto_atualizada_em = models.DateTimeField(null=True, blank=True, editable=False)
 
 
+# Comodidades que o anunciante marca no cadastro: (chave, nome exibido, ícone do Bootstrap Icons)
+COMODIDADES = [
+    ('mobiliado', 'Mobiliado', 'bi-lamp'),
+    ('wifi', 'Wi-Fi', 'bi-wifi'),
+    ('ar_condicionado', 'Ar-condicionado', 'bi-snow'),
+    ('cozinha', 'Cozinha equipada', 'bi-cup-hot'),
+    ('lavanderia', 'Lavanderia / máquina de lavar', 'bi-basket'),
+    ('academia', 'Academia', 'bi-bicycle'),
+    ('piscina', 'Piscina', 'bi-water'),
+    ('portaria', 'Portaria ou segurança', 'bi-shield-check'),
+    ('elevador', 'Elevador', 'bi-building-up'),
+    ('pets', 'Aceita pets', 'bi-heart'),
+    ('agua_inclusa', 'Água inclusa', 'bi-droplet'),
+    ('luz_inclusa', 'Luz inclusa', 'bi-lightning-charge'),
+    ('internet_inclusa', 'Internet inclusa', 'bi-router'),
+    ('condominio_incluso', 'Condomínio incluso', 'bi-buildings'),
+]
+COMODIDADES_POR_CHAVE = {chave: (nome, icone) for chave, nome, icone in COMODIDADES}
+CONTAS = ['agua_inclusa', 'luz_inclusa', 'internet_inclusa', 'condominio_incluso']
+
+
 class Imovel(models.Model):
     class Tipo(models.TextChoices):
         APARTAMENTO = 'apartamento', 'Apartamento'
@@ -100,6 +121,13 @@ class Imovel(models.Model):
     quartos = models.PositiveSmallIntegerField(default=0)
     banheiros = models.PositiveSmallIntegerField(default=0)
     vagas = models.PositiveSmallIntegerField(default=0)
+    capacidade = models.PositiveSmallIntegerField(default=1, help_text='Quantas pessoas podem morar no imóvel')
+    camas = models.PositiveSmallIntegerField(default=1)
+    comodidades = models.JSONField(default=list, blank=True)
+    proximidades = models.CharField(
+        max_length=160, blank=True,
+        help_text='O que tem por perto. Ex.: em frente ao shopping, a 5 minutos da UNIPAM',
+    )
     area = models.PositiveIntegerField(
         help_text='Área em metros quadrados', validators=[MinValueValidator(1)],
     )
@@ -129,6 +157,59 @@ class Imovel(models.Model):
 
     def __str__(self):
         return self.titulo
+
+    # ---- Dados organizados para a página de detalhes (mesmo padrão para todos os imóveis) ----
+    def lista_comodidades(self):
+        return [
+            {'chave': chave, 'nome': COMODIDADES_POR_CHAVE[chave][0], 'icone': COMODIDADES_POR_CHAVE[chave][1]}
+            for chave, _, _ in COMODIDADES if chave in (self.comodidades or [])
+        ]
+
+    def contas_inclusas(self):
+        nomes = {'agua_inclusa': 'água', 'luz_inclusa': 'luz', 'internet_inclusa': 'internet',
+                 'condominio_incluso': 'condomínio'}
+        return [nomes[c] for c in CONTAS if c in (self.comodidades or [])]
+
+    def resumo_espaco(self):
+        tipo = {
+            self.Tipo.APARTAMENTO: 'Apartamento inteiro',
+            self.Tipo.KITNET: 'Kitnet inteira',
+            self.Tipo.CASA: 'Casa inteira',
+            self.Tipo.CASA_COMPARTILHADA: 'Quarto em casa compartilhada',
+        }.get(self.tipo, 'Imóvel')
+        cidade = self.cidade.split(' - ')[0]
+        return f'{tipo} em {cidade}'
+
+    def destaques(self):
+        """Até 4 destaques montados a partir do que foi preenchido no cadastro."""
+        itens = []
+        cidade = self.cidade.split(' - ')[0]
+        if self.proximidades:
+            itens.append({'icone': 'bi-geo-alt', 'titulo': f'Em {cidade}, {self.proximidades}.',
+                          'texto': f'Bairro {self.bairro}. Ótimo para quem quer tudo por perto.'})
+        else:
+            itens.append({'icone': 'bi-geo-alt', 'titulo': f'No bairro {self.bairro}',
+                          'texto': f'{self.endereco}, {self.cidade}.'})
+        contas = self.contas_inclusas()
+        if contas:
+            texto = ', '.join(contas[:-1]) + (' e ' if len(contas) > 1 else '') + contas[-1]
+            itens.append({'icone': 'bi-receipt', 'titulo': 'Contas inclusas no aluguel',
+                          'texto': f'{texto[0].upper()}{texto[1:]} já estão no valor mensal. Sem surpresas no fim do mês.'})
+        chaves = set(self.comodidades or [])
+        if 'mobiliado' in chaves:
+            itens.append({'icone': 'bi-lamp', 'titulo': 'Pronto para morar',
+                          'texto': 'Imóvel mobiliado: é só levar as malas e se mudar.'})
+        estrutura = [COMODIDADES_POR_CHAVE[c][0].lower() for c in
+                     ['ar_condicionado', 'wifi', 'cozinha', 'academia', 'piscina', 'portaria', 'elevador'] if c in chaves]
+        if self.vagas:
+            estrutura.insert(0, f'{self.vagas} vaga{"s" if self.vagas > 1 else ""} de garagem')
+        if estrutura:
+            lista = ', '.join(estrutura[:3])
+            itens.append({'icone': 'bi-check2-circle', 'titulo': 'Estrutura completa',
+                          'texto': f'{lista[0].upper()}{lista[1:]}.'})
+        if 'pets' in chaves:
+            itens.append({'icone': 'bi-heart', 'titulo': 'Aceita pets', 'texto': 'Seu bichinho é bem-vindo.'})
+        return itens[:4]
 
 
 class Favorito(models.Model):
