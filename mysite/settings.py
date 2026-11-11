@@ -108,6 +108,7 @@ MIDDLEWARE = [
 AUTHENTICATION_BACKENDS = [
     'axes.backends.AxesStandaloneBackend',
     'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',  # necessario para o login com Google manter a sessao
 ]
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = timedelta(minutes=15)
@@ -259,7 +260,11 @@ GOOGLE_LOGIN_ATIVO = bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)
 LOGIN_REDIRECT_URL = 'inicio'
 SOCIALACCOUNT_ONLY = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
-SOCIALACCOUNT_AUTO_SIGNUP = False
+SOCIALACCOUNT_AUTO_SIGNUP = False  # conta nova pelo Google -> tela para completar o cadastro
+# Quem ja tem conta com o mesmo e-mail (cadastro com senha) entra direto pelo Google,
+# e o Google fica ligado a essa conta. Seguro porque o Google so entrega e-mails verificados.
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 SOCIALACCOUNT_FORMS = {'signup': 'unilar.google_forms.CadastroGoogleForm'}
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*']

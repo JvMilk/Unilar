@@ -4,7 +4,7 @@ from django.views.decorators.http import require_POST
 
 from .forms import ContatoImovelForm, SolicitacaoVisitaForm
 from .forms import CadastroForm
-from .models import Imovel, PerfilCadastro
+from .models import Favorito, Imovel, PerfilCadastro
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login as entrar
 from django.db import IntegrityError, transaction
@@ -13,6 +13,29 @@ from django.http import Http404
 
 
 IMOVEL = 'kitnet-no-centro'
+
+
+def slugs_favoritos(request):
+    """Favoritos de quem está logado vêm do banco; de visitantes, da sessão do navegador."""
+    if request.user.is_authenticated:
+        return list(Favorito.objects.filter(usuario=request.user).values_list('imovel__slug', flat=True))
+    return request.session.get('favoritos', [])
+
+
+def alternar_favorito(request, imovel):
+    """Marca ou desmarca o favorito e devolve True se ele ficou marcado."""
+    if request.user.is_authenticated:
+        favorito, criado = Favorito.objects.get_or_create(usuario=request.user, imovel=imovel)
+        if not criado:
+            favorito.delete()
+        return criado
+    salvos = request.session.get('favoritos', [])
+    if imovel.slug in salvos:
+        salvos.remove(imovel.slug)
+    else:
+        salvos.append(imovel.slug)
+    request.session['favoritos'] = salvos
+    return imovel.slug in salvos
 
 def login(request):
     if request.method == 'POST':
@@ -62,7 +85,7 @@ def catalogo(request, titulo='Imóveis', somente_favoritos=False, template='inic
     cidade = request.GET.get('cidade', '')
     tipo = request.GET.get('tipo', '')
     preco = request.GET.get('preco', '')
-    salvos = request.session.get('favoritos', [])
+    salvos = slugs_favoritos(request)
     busca = request.GET.get('q', '').strip()
     bairro = request.GET.get('bairro', '')
     ordenar = request.GET.get('ordem', '')
@@ -148,7 +171,7 @@ def imovel_publico(request, slug):
     return render(request, 'imovel_publico.html', {
         'imovel': imovel,
         'fotos': imovel.fotos.all(),
-        'favorito': slug in request.session.get('favoritos', []),
+        'favorito': slug in slugs_favoritos(request),
     })
 
 
@@ -159,7 +182,7 @@ def contato_imovel_publico(request, slug):
     if not form.is_valid():
         return render(request, 'imovel_publico.html', {
             'imovel': imovel, 'fotos': imovel.fotos.all(), 'form': form,
-            'favorito': slug in request.session.get('favoritos', []),
+            'favorito': slug in slugs_favoritos(request),
         }, status=400)
     contato = form.save(commit=False)
     contato.imovel = slug
@@ -170,14 +193,8 @@ def contato_imovel_publico(request, slug):
 
 @require_POST
 def favoritar_catalogo(request, slug):
-    if not Imovel.objects.filter(slug=slug, status=Imovel.Status.DISPONIVEL).exists():
-        raise Http404
-    salvos = request.session.get('favoritos', [])
-    if slug in salvos:
-        salvos.remove(slug)
-    else:
-        salvos.append(slug)
-    request.session['favoritos'] = salvos
+    imovel = get_object_or_404(Imovel, slug=slug, status=Imovel.Status.DISPONIVEL)
+    alternar_favorito(request, imovel)
     return redirect('favoritos')
 
 
@@ -191,7 +208,7 @@ def detalhe_imovel(request):
     if IMOVEL not in visitados:
         request.session['visitados'] = visitados + [IMOVEL]
     return render(request, 'imovel.html', {
-        'favorito': IMOVEL in request.session.get('favoritos', []),
+        'favorito': IMOVEL in slugs_favoritos(request),
         'imovel': imovel,
         'fotos': imovel.fotos.all(),
     })
@@ -203,13 +220,8 @@ def favoritos(request):
 
 @require_POST
 def favoritar_imovel(request):
-    favoritos = request.session.get('favoritos', [])
-    if IMOVEL in favoritos:
-        favoritos.remove(IMOVEL)
-    else:
-        favoritos.append(IMOVEL)
-    request.session['favoritos'] = favoritos
-    return JsonResponse({'favorito': IMOVEL in favoritos})
+    imovel = get_object_or_404(Imovel, slug=IMOVEL)
+    return JsonResponse({'favorito': alternar_favorito(request, imovel)})
 
 
 @require_POST
@@ -263,15 +275,16 @@ def painel(request):
                 perfil.save(update_fields=['nome'])
         messages.success(request, 'Perfil atualizado.')
         return redirect('painel')
-    salvos = request.session.get('favoritos', [])
+    salvos = slugs_favoritos(request)
     visitados = request.session.get('visitados', [])
+    favoritos = (Favorito.objects.filter(usuario=request.user, imovel__status=Imovel.Status.DISPONIVEL)
+                 .select_related('imovel').prefetch_related('imovel__fotos'))
     return render(request, 'painel.html', {
-        'nome': nome, 'dados': dados, 'form': form,
+        'nome': nome, 'dados': dados, 'form': form, 'perfil': perfil,
+        # CPF parcialmente escondido na tela: ***.982.247-**
+        'cpf_mascarado': f'***.{perfil.cpf[3:6]}.{perfil.cpf[6:9]}-**' if perfil and len(perfil.cpf) == 11 else '',
         'editando': request.method == 'POST' or request.GET.get('editar') == '1',
-        'salvos': [
-            dados_catalogo(item, salvos)
-            for item in Imovel.objects.filter(slug__in=salvos, status=Imovel.Status.DISPONIVEL).prefetch_related('fotos')
-        ],
+        'salvos': [dados_catalogo(favorito.imovel, salvos) for favorito in favoritos],
         'visitados': [
             dados_catalogo(item, salvos)
             for item in Imovel.objects.filter(slug__in=visitados, status=Imovel.Status.DISPONIVEL).prefetch_related('fotos')

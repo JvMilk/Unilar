@@ -150,6 +150,32 @@ class PainelTests(TestCase):
         self.assertEqual(self.client.get('/painel/').status_code, 302)
 
 
+    def test_favoritos_ficam_salvos_no_banco(self):
+        from .models import Favorito
+        self.client.force_login(self.usuario)
+        self.client.post('/catalogo/kitnet-no-centro/favoritar/')
+        self.assertEqual(Favorito.objects.filter(usuario=self.usuario).count(), 1)
+        self.client.post('/sair/')
+        self.client.force_login(self.usuario)
+        self.assertEqual([i['slug'] for i in self.client.get('/painel/').context['salvos']], ['kitnet-no-centro'])
+        self.client.post('/catalogo/kitnet-no-centro/favoritar/')
+        self.assertFalse(Favorito.objects.filter(usuario=self.usuario).exists())
+
+    def test_favoritos_de_antes_do_login_vao_para_a_conta(self):
+        from .models import Favorito
+        self.client.post('/catalogo/kitnet-no-centro/favoritar/')
+        self.client.post(reverse('login'), {'email': 'painel@example.com', 'senha': 'Teste123!'})
+        self.assertTrue(Favorito.objects.filter(usuario=self.usuario, imovel__slug='kitnet-no-centro').exists())
+
+    def test_navbar_mostra_meu_painel_apos_login(self):
+        botao_entrar = 'href="/login/" class="btn botao-menu"'
+        self.assertContains(self.client.get('/inicio/'), botao_entrar)
+        self.client.force_login(self.usuario)
+        resposta = self.client.get('/inicio/')
+        self.assertContains(resposta, 'bi-person-workspace')
+        self.assertNotContains(resposta, botao_entrar)
+
+
 class AdminAreaTests(TestCase):
     def setUp(self):
         from django.contrib.auth import get_user_model

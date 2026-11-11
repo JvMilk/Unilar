@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.signals import user_logged_in
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models.signals import post_delete
@@ -123,6 +124,24 @@ class Imovel(models.Model):
         return self.titulo
 
 
+class Favorito(models.Model):
+    """Imóvel que um usuário logado salvou como favorito (fica guardado no banco)."""
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favoritos')
+    imovel = models.ForeignKey(Imovel, on_delete=models.CASCADE, related_name='favoritado_por')
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+        constraints = [
+            models.UniqueConstraint(fields=['usuario', 'imovel'], name='favorito_unico_por_usuario'),
+        ]
+        verbose_name = 'favorito'
+        verbose_name_plural = 'favoritos'
+
+    def __str__(self):
+        return f'{self.usuario} ♥ {self.imovel}'
+
+
 class FotoImovel(models.Model):
     imovel = models.ForeignKey(Imovel, on_delete=models.CASCADE, related_name='fotos')
     imagem = models.ImageField(upload_to='imoveis/%Y/%m/')
@@ -154,3 +173,15 @@ class ConfiguracaoSite(models.Model):
 def remover_arquivo_foto(sender, instance, **kwargs):
     if instance.imagem:
         instance.imagem.delete(save=False)
+
+
+@receiver(user_logged_in)
+def juntar_favoritos_da_sessao(sender, request, user, **kwargs):
+    """Ao entrar, os favoritos marcados antes do login passam a ficar salvos na conta."""
+    sessao = getattr(request, 'session', None)
+    slugs = sessao.pop('favoritos', []) if sessao is not None else []
+    if slugs:
+        Favorito.objects.bulk_create(
+            [Favorito(usuario=user, imovel=imovel) for imovel in Imovel.objects.filter(slug__in=slugs)],
+            ignore_conflicts=True,
+        )

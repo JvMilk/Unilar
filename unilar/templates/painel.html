@@ -39,8 +39,8 @@
         </form>
         {% else %}
         <div class="painel-cartao painel-dados">
-          <dl><dt>Nome</dt><dd>{{ nome }}</dd><dt>E-mail</dt><dd>{{ user.email|default:"Não informado" }}</dd><dt>Telefone</dt><dd>{{ dados.telefone|default:"Não informado" }}</dd></dl>
-          <dl><dt>Curso</dt><dd>{{ dados.curso|default:"Não informado" }}</dd><dt>Universidade</dt><dd>{{ dados.universidade|default:"Não informada" }}</dd></dl>
+          <dl><dt>Nome</dt><dd>{{ nome }}</dd><dt>E-mail</dt><dd>{{ user.email|default:"Não informado" }}</dd><dt>Telefone</dt><dd>{{ dados.telefone|default:"Não informado" }}</dd>{% if cpf_mascarado %}<dt>CPF</dt><dd>{{ cpf_mascarado }}</dd>{% endif %}</dl>
+          <dl><dt>Curso</dt><dd>{{ dados.curso|default:"Não informado" }}</dd><dt>Universidade</dt><dd>{{ dados.universidade|default:"Não informada" }}</dd>{% if perfil %}<dt>Cidade</dt><dd>{{ perfil.cidade }}</dd><dt>Endereço</dt><dd>{{ perfil.endereco }}</dd>{% endif %}</dl>
         </div>
         {% endif %}
         <div class="painel-titulo"><h2>Meus favoritos</h2><a href="#favoritos">Ver todos <i class="bi bi-arrow-right"></i></a></div>

@@ -179,6 +179,7 @@
         }
 
         function escolher(valor) {
+            campo.classList.remove('invalido');
             select.value = valor;
             select.setCustomValidity('');
             select.dispatchEvent(new Event('change', { bubbles: true }));
@@ -189,7 +190,10 @@
         painel.addEventListener('fechar', function () { fechar(false); });
         botao.addEventListener('click', function () { painel.hidden ? abrir() : fechar(true); });
         select.addEventListener('focus', function () { botao.focus(); });
-        select.addEventListener('invalid', function () { botao.focus(); });
+        select.addEventListener('invalid', function () {
+            campo.classList.add('invalido');
+            botao.focus();
+        });
         busca.addEventListener('input', function () { montarLista(); marcarAtivo(0); });
         busca.addEventListener('keydown', function (e) {
             if (e.key === 'ArrowDown') { e.preventDefault(); marcarAtivo(ativo + 1); }

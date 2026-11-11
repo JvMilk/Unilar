@@ -1428,3 +1428,5 @@ body.imovel-aberto { overflow: hidden; }
 .seletor-lista li[role="option"]:hover, .seletor-lista li.ativo { background:#eef2fb; }
 .seletor-lista li[aria-selected="true"] { background:linear-gradient(100deg,#0458e9,#5b31db); color:#fff; }
 .seletor-vazio { padding:.6rem .8rem; color:#7b8496; font-weight:500; font-size:.9rem; }
+.cad-campo.seletor.invalido span { outline:2px solid #d93838; }
+.cad-campo.seletor.invalido::after { content:'Selecione uma opção.'; display:block; margin-top:.3rem; color:#d93838; font-size:.85rem; font-weight:600; }
