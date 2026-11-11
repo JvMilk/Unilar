@@ -38,7 +38,7 @@
 {% for erro in form.endereco.errors %}<small class="text-danger">{{ erro }}</small>{% endfor %}</label>
 <div class="cad-dupla">
 <label class="cad-campo">Estado *<span><i class="bi bi-map" aria-hidden="true"></i><select name="uf" required><option value="">Selecione</option>{% for sigla, nome in form.fields.uf.choices %}<option value="{{ sigla }}"{% if form.uf.value == sigla %} selected{% endif %}>{{ nome }}</option>{% endfor %}</select></span></label>
-<label class="cad-campo">Cidade *<span><i class="bi bi-geo" aria-hidden="true"></i><select name="cidade" data-selecionada="{{ form.cidade.value|default_if_none:'' }}" required disabled><option value="">Selecione o estado primeiro</option></select></span>
+<label class="cad-campo">Cidade *<span><i class="bi bi-geo" aria-hidden="true"></i><select name="cidade" data-selecionada="{{ form.cidade.value|default_if_none:'' }}" data-municipios="{% static 'dados/municipios.json' %}" required disabled><option value="">Selecione o estado primeiro</option></select></span>
 {% for erro in form.cidade.errors %}<small class="text-danger">{{ erro }}</small>{% endfor %}</label>
 </div>
 
@@ -53,5 +53,5 @@
 </form>
 <p class="cad-entrar">Não é você? <a href="{% url 'login' %}">Voltar para o login →</a></p></section></main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script defer src="{% static 'js/cpf_cidade.js' %}?v=2"></script>
+<script defer src="{% static 'js/cpf_cidade.js' %}?v=3"></script>
 </body></html>

@@ -43,16 +43,30 @@
         return o;
     }
 
+    let listaLocal = null;
+
+    // Usa a lista salva no projeto; se ela não existir, consulta a API do IBGE.
+    async function nomesDasCidades(sigla) {
+        if (listaLocal === null && cidade.dataset.municipios) {
+            try {
+                const resposta = await fetch(cidade.dataset.municipios);
+                listaLocal = resposta.ok ? await resposta.json() : false;
+            } catch (erro) { listaLocal = false; }
+        }
+        if (listaLocal && listaLocal[sigla]) return listaLocal[sigla];
+        const resposta = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados/' + sigla + '/municipios?orderBy=nome');
+        if (!resposta.ok) throw new Error();
+        return (await resposta.json()).map(function (m) { return m.nome; });
+    }
+
     async function carregarCidades(selecionada) {
         cidade.replaceChildren(opcao(uf.value ? 'Carregando cidades...' : 'Selecione o estado primeiro', ''));
         cidade.disabled = true;
         if (!uf.value) return;
         try {
-            const resposta = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados/' + uf.value + '/municipios?orderBy=nome');
-            if (!resposta.ok) throw new Error();
-            const municipios = await resposta.json();
+            const nomes = await nomesDasCidades(uf.value);
             cidade.replaceChildren(opcao('Selecione a cidade', ''));
-            municipios.forEach(function (m) { cidade.append(opcao(m.nome, m.nome)); });
+            nomes.forEach(function (nome) { cidade.append(opcao(nome, nome)); });
             if (selecionada) cidade.value = selecionada;
             cidade.disabled = false;
             cidade.dispatchEvent(new Event('change'));

@@ -1,7 +1,10 @@
 from datetime import datetime
+import gzip
 import json
 import unicodedata
 import urllib.request
+from functools import lru_cache
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from django import forms
@@ -60,6 +63,8 @@ UFS = [
     ('SP', 'São Paulo'), ('SE', 'Sergipe'), ('TO', 'Tocantins'),
 ]
 IBGE_MUNICIPIOS_URL = 'https://servicodados.ibge.gov.br/api/v1/localidades/estados/{uf}/municipios'
+# Lista oficial do IBGE salva no projeto (gerada com: python manage.py baixar_municipios).
+MUNICIPIOS_ARQUIVO = Path(__file__).resolve().parent / 'front' / 'dados' / 'municipios.json'
 
 
 def _normalizar(texto):
@@ -67,13 +72,33 @@ def _normalizar(texto):
     return ' '.join(sem_acento.casefold().split())
 
 
+@lru_cache(maxsize=1)
+def _municipios_do_arquivo():
+    with open(MUNICIPIOS_ARQUIVO, encoding='utf-8') as arquivo:
+        return json.load(arquivo)
+
+
+def baixar_municipios_ibge(uf):
+    requisicao = urllib.request.Request(
+        IBGE_MUNICIPIOS_URL.format(uf=uf),
+        headers={'User-Agent': 'UniLar/1.0', 'Accept-Encoding': 'gzip'},
+    )
+    with urllib.request.urlopen(requisicao, timeout=15) as resposta:
+        conteudo = resposta.read()
+    # A API do IBGE costuma responder compactada (gzip), mesmo sem pedir.
+    if conteudo[:2] == b'\x1f\x8b':
+        conteudo = gzip.decompress(conteudo)
+    return [municipio['nome'] for municipio in json.loads(conteudo.decode('utf-8'))]
+
+
 def municipios_da_uf(uf):
-    """Lista oficial de municípios da UF (API pública do IBGE), guardada em cache por 24 h."""
+    """Municípios da UF: usa o arquivo salvo no projeto; sem ele, consulta a API do IBGE (cache de 24 h)."""
+    if MUNICIPIOS_ARQUIVO.exists():
+        return _municipios_do_arquivo().get(uf, [])
     chave = f'ibge-municipios-{uf}'
     nomes = cache.get(chave)
     if nomes is None:
-        with urllib.request.urlopen(IBGE_MUNICIPIOS_URL.format(uf=uf), timeout=8) as resposta:
-            nomes = [municipio['nome'] for municipio in json.load(resposta)]
+        nomes = baixar_municipios_ibge(uf)
         cache.set(chave, nomes, 60 * 60 * 24)
     return nomes
 
