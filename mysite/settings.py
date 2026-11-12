@@ -260,6 +260,10 @@ GOOGLE_LOGIN_ATIVO = bool(GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET)
 LOGIN_REDIRECT_URL = 'inicio'
 SOCIALACCOUNT_ONLY = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
+# Mapa da página de detalhes do imóvel. Opcional: com a chave da "Maps Embed API" o mapa usa a
+# versão oficial do Google; sem ela, usa o mapa incorporado padrão (funciona sem chave).
+GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '')
+
 SOCIALACCOUNT_AUTO_SIGNUP = False  # conta nova pelo Google -> tela para completar o cadastro
 # Quem ja tem conta com o mesmo e-mail (cadastro com senha) entra direto pelo Google,
 # e o Google fica ligado a essa conta. Seguro porque o Google so entrega e-mails verificados.

@@ -198,6 +198,18 @@ def contexto_detalhe(request, imovel):
         'anunciante': anunciante or {'nome': 'Equipe UniLar', 'desde': None},
         'descricao_longa': len(descricao) > 360 or descricao.count('\n') > 5,
         'mapa_url': 'https://www.google.com/maps/search/?api=1&query=' + quote_plus(endereco),
+        'endereco_completo': endereco,
+        'maps_key': settings.GOOGLE_MAPS_API_KEY,
+        # Pontos de referência pesquisados ao redor do endereço (botões ao lado do mapa).
+        'pontos_referencia': [
+            ('O imóvel', 'bi-house-door', ''),
+            ('Universidades', 'bi-mortarboard', 'universidade'),
+            ('Mercados', 'bi-cart3', 'supermercado'),
+            ('Farmácias', 'bi-capsule', 'farmácia'),
+            ('Restaurantes', 'bi-cup-straw', 'restaurante'),
+            ('Ponto de ônibus', 'bi-bus-front', 'ponto de ônibus'),
+            ('Academias', 'bi-bicycle', 'academia'),
+        ],
     }
 
 

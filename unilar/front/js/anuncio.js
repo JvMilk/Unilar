@@ -41,4 +41,31 @@
             if (foto && indice !== '0') foto.scrollIntoView({ block: 'start' });
         });
     }
+
+    // Mapa: troca entre o imóvel e os pontos de referência ao redor.
+    const painel = document.querySelector('.anuncio-mapa-painel');
+    if (painel) {
+        const mapa = document.getElementById('mapaImovel');
+        const legenda = document.getElementById('mapaLegenda');
+        const abrir = document.getElementById('mapaAbrir');
+        const endereco = painel.dataset.endereco;
+        const chave = painel.dataset.chave;
+        painel.querySelectorAll('.anuncio-mapa-filtro').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                const busca = botao.dataset.busca;
+                const consulta = busca ? busca + ' perto de ' + endereco : endereco;
+                const q = encodeURIComponent(consulta);
+                if (chave) {
+                    mapa.src = 'https://www.google.com/maps/embed/v1/' + (busca ? 'search' : 'place') + '?key=' + encodeURIComponent(chave) + '&q=' + q;
+                } else {
+                    mapa.src = 'https://maps.google.com/maps?q=' + q + '&z=' + (busca ? '15' : '16') + '&output=embed';
+                }
+                abrir.href = 'https://www.google.com/maps/search/?api=1&query=' + q;
+                legenda.textContent = busca ? 'Mostrando: ' + botao.textContent.trim().toLowerCase() + ' perto do imóvel' : 'Mostrando: localização do imóvel';
+                painel.querySelectorAll('.anuncio-mapa-filtro').forEach(function (outro) {
+                    outro.setAttribute('aria-pressed', String(outro === botao));
+                });
+            });
+        });
+    }
 })();

@@ -536,6 +536,9 @@ class AdminAreaTests(TestCase):
         self.assertContains(pagina, 'Pronto para morar')
         self.assertContains(pagina, 'R$ 980,50')
         self.assertContains(pagina, 'class="anuncio-lateral"')
+        self.assertContains(pagina, 'id="mapaImovel"')
+        self.assertContains(pagina, 'maps.google.com/maps?q=Rua%20das%20Flores')
+        self.assertContains(pagina, 'data-busca="universidade"')
         # Campos novos são opcionais: sem eles, valem os padrões.
         self.client.post(reverse('admin_imovel_novo'), self.dados_imovel(titulo='Sem extras'))
         sem_extras = Imovel.objects.get(titulo='Sem extras')
