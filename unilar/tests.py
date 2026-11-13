@@ -212,6 +212,17 @@ class PainelTests(TestCase):
         self.assertEqual(self.client.get('/painel/foto/').status_code, 404)
 
 
+class SobreTests(TestCase):
+    def test_pagina_sobre_mostra_numeros_reais(self):
+        from .models import Imovel
+        resposta = self.client.get(reverse('sobre'))
+        self.assertEqual(resposta.status_code, 200)
+        total = Imovel.objects.filter(status=Imovel.Status.DISPONIVEL).count()
+        self.assertEqual(resposta.context['total_imoveis'], total)
+        self.assertContains(resposta, 'Seu próximo lar começa')
+        self.assertContains(resposta, 'aria-current="page"')
+
+
 class DuvidasTests(TestCase):
     def setUp(self):
         from django.contrib.auth import get_user_model

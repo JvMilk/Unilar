@@ -87,6 +87,18 @@ def inicio(request):
     return catalogo(request, titulo='Imóveis em destaque')
 
 
+def sobre(request):
+    """Página Sobre: números vêm do banco, nada é inventado."""
+    disponiveis = Imovel.objects.filter(status=Imovel.Status.DISPONIVEL)
+    return render(request, 'sobre.html', {
+        'total_imoveis': disponiveis.count(),
+        'total_cidades': disponiveis.values('cidade').distinct().count(),
+        'total_tipos': len(Imovel.Tipo.choices),
+        'cidades': sorted({c.split(' - ')[0] for c in disponiveis.values_list('cidade', flat=True)}),
+        'destaques': [dados_catalogo(item) for item in disponiveis.prefetch_related('fotos')[:3]],
+    })
+
+
 def catalogo(request, titulo='Imóveis', somente_favoritos=False, template='inicio.html'):
     cidade = request.GET.get('cidade', '')
     tipo = request.GET.get('tipo', '')

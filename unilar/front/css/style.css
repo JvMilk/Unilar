@@ -1721,3 +1721,88 @@ img.painel-avatar { object-fit: cover; padding: 0; }
     .anuncio-mapa-painel { grid-column: 1 / -1; }
     .anuncio-mapa-moldura, .anuncio-mapa-moldura iframe { min-height: 420px; }
 }
+
+/* ==================================================
+   PÁGINA SOBRE
+   ================================================== */
+.sobre { max-width: 1240px; margin: 0 auto; padding: 36px clamp(16px, 3.5vw, 48px) 64px; color: var(--azul-escuro); }
+.sobre-sobretitulo { margin: 0 0 10px; color: var(--azul); font-size: 12px; font-weight: 700; letter-spacing: 2px; }
+.sobre-hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); align-items: center; margin-bottom: 34px; }
+.sobre-hero h1 { margin: 0 0 16px; font-size: clamp(30px, 4vw, 48px); font-weight: 800; line-height: 1.08; letter-spacing: -1px; text-wrap: balance; }
+.sobre-hero h1 span { background: linear-gradient(100deg, var(--azul), var(--roxo)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sobre-hero-texto > p:not(.sobre-sobretitulo) { max-width: 58ch; margin: 0 0 24px; color: var(--texto-suave); font-size: 16px; line-height: 1.65; }
+.sobre-acoes { display: flex; flex-wrap: wrap; gap: 12px; }
+.sobre-botao { display: inline-flex; align-items: center; gap: 9px; padding: 13px 22px; border-radius: 14px; color: #fff; background: linear-gradient(100deg, var(--azul), #293aff, var(--roxo)); font-weight: 700; text-decoration: none; box-shadow: 0 10px 24px rgb(7 80 255 / 22%); transition: filter .2s ease, transform .2s ease; }
+.sobre-botao:hover { color: #fff; filter: brightness(1.08); transform: translateY(-1px); }
+.sobre-botao-secundario { display: inline-flex; align-items: center; gap: 9px; padding: 12px 20px; border: 1px solid var(--azul); border-radius: 14px; color: var(--azul); background: #fff; font-weight: 700; text-decoration: none; }
+.sobre-botao-secundario:hover { background: #eef3ff; }
+.sobre-hero-foto { position: relative; margin: 0; border-radius: 24px; overflow: hidden; aspect-ratio: 5 / 4; max-width: 100%; box-shadow: 0 20px 50px rgb(7 25 107 / 18%); }
+.sobre-hero-foto img { width: 100%; height: 100%; object-fit: cover; }
+.sobre-hero-foto figcaption { position: absolute; left: 16px; bottom: 16px; display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: rgb(255 255 255 / 92%); font-size: 14px; font-weight: 700; }
+.sobre-hero-foto figcaption i { color: var(--roxo); }
+
+.sobre-numeros { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-radius: 20px; overflow: hidden; background: linear-gradient(100deg, #0a2a8f, #2a2fd6 55%, #6a2cff); color: #fff; }
+.sobre-numeros div { display: grid; gap: 2px; padding: 22px 24px; }
+.sobre-numeros div + div { border-left: 1px solid rgb(255 255 255 / 18%); }
+.sobre-numeros strong { font-size: clamp(26px, 3vw, 36px); font-weight: 800; font-variant-numeric: tabular-nums; }
+.sobre-numeros span { color: rgb(255 255 255 / 82%); font-size: 14px; }
+.sobre-cidades { display: flex; align-items: center; gap: 8px; margin: 12px 4px 0; color: var(--texto-suave); font-size: 14px; }
+.sobre-cidades i { color: var(--roxo); }
+
+.sobre-bloco { margin-top: 64px; }
+.sobre-bloco-titulo { margin-bottom: 24px; }
+.sobre-bloco-titulo h2 { margin: 0; max-width: 24ch; font-size: clamp(24px, 2.8vw, 32px); font-weight: 800; letter-spacing: -.5px; text-wrap: balance; }
+.sobre-titulo-linha { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.sobre-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.sobre-cards article { padding: 26px; border: 1px solid var(--borda); border-radius: 20px; background: #fff; transition: transform .2s ease, box-shadow .2s ease; }
+.sobre-cards article:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgb(7 25 107 / 10%); }
+.sobre-cards i { display: inline-grid; place-items: center; width: 48px; height: 48px; margin-bottom: 14px; border-radius: 14px; background: #eef1ff; color: var(--roxo); font-size: 22px; }
+.sobre-cards h3 { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
+.sobre-cards p { margin: 0; color: var(--texto-suave); font-size: 15px; line-height: 1.6; }
+
+.sobre-passos-bloco { padding: 34px; border-radius: 24px; background: #f4f7ff; }
+.sobre-passos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; counter-reset: passo; }
+.sobre-passos li { position: relative; display: grid; gap: 12px; }
+.sobre-passos li > span { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: #fff; background: linear-gradient(135deg, var(--azul), var(--roxo)); font-size: 18px; font-weight: 800; }
+.sobre-passos li:not(:last-child)::after { content: ""; position: absolute; top: 22px; left: 56px; right: -6px; border-top: 2px dashed #c7d2f3; }
+.sobre-passos strong { display: block; margin-bottom: 4px; font-size: 17px; }
+.sobre-passos p { margin: 0; color: var(--texto-suave); font-size: 14px; line-height: 1.55; }
+
+.sobre-historia-texto { max-width: 70ch; color: #2c3a66; font-size: 16px; line-height: 1.7; }
+.sobre-valores { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.sobre-valores li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 22px; border-left: 4px solid var(--roxo); border-radius: 0 16px 16px 0; background: #fff; box-shadow: 0 6px 20px rgb(7 25 107 / 6%); }
+.sobre-valores i { font-size: 26px; color: var(--azul); }
+.sobre-valores strong { display: block; margin-bottom: 4px; font-size: 16px; }
+.sobre-valores p { margin: 0; color: var(--texto-suave); font-size: 14px; line-height: 1.55; }
+
+.sobre-link { display: inline-flex; align-items: center; gap: 6px; color: var(--azul); font-weight: 700; text-decoration: none; }
+.sobre-imoveis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.sobre-imovel { display: grid; overflow: hidden; border: 1px solid var(--borda); border-radius: 18px; background: #fff; color: inherit; text-decoration: none; transition: transform .2s ease, box-shadow .2s ease; }
+.sobre-imovel:hover { color: inherit; transform: translateY(-3px); box-shadow: 0 14px 30px rgb(7 25 107 / 12%); }
+.sobre-imovel img { width: 100%; aspect-ratio: 16 / 10; max-width: 100%; object-fit: cover; }
+.sobre-imovel span { display: grid; gap: 2px; padding: 14px 16px; }
+.sobre-imovel strong { font-size: 16px; }
+.sobre-imovel small { color: var(--azul); font-weight: 600; }
+
+.sobre-final { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-top: 64px; padding: 36px clamp(22px, 4vw, 48px); border-radius: 24px; color: #fff; background: linear-gradient(115deg, #071a6b, #2a2fd6 60%, #6a2cff); }
+.sobre-final h2 { margin: 0 0 6px; font-size: clamp(22px, 2.6vw, 30px); font-weight: 800; }
+.sobre-final > div:first-child p { margin: 0; max-width: 52ch; color: rgb(255 255 255 / 85%); }
+.sobre-contato { display: grid; gap: 8px; justify-items: start; }
+.sobre-contato p { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 600; }
+.sobre-contato > a:not(.sobre-botao) { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-weight: 600; }
+.sobre-botao-claro { margin-top: 6px; background: #fff; color: var(--azul-escuro); box-shadow: none; }
+.sobre-botao-claro:hover { color: var(--azul-escuro); }
+
+@media (max-width: 991.98px) {
+    .sobre-hero { grid-template-columns: 1fr; }
+    .sobre-numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sobre-numeros div:nth-child(3) { border-left: 0; }
+    .sobre-numeros div:nth-child(n+3) { border-top: 1px solid rgb(255 255 255 / 18%); }
+    .sobre-cards, .sobre-valores, .sobre-imoveis { grid-template-columns: 1fr; }
+    .sobre-passos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sobre-passos li::after { display: none; }
+}
+@media (max-width: 575.98px) {
+    .sobre-passos { grid-template-columns: 1fr; }
+    .sobre-passos-bloco { padding: 22px; }
+}

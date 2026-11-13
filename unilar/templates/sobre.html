@@ -1,0 +1,139 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sobre | {{ configuracao_site.nome_site|default:"UniLar" }}</title>
+  <meta name="description" content="O UniLar conecta estudantes universitários a imóveis perto da universidade, com informações claras e contato direto.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{% static 'css/style.css' %}?v=20261113a" rel="stylesheet">
+</head>
+<body>
+<div class="pagina">{% include "cabecalho.html" %}
+<main class="sobre">
+
+  <!-- Abertura -->
+  <section class="sobre-hero">
+    <div class="sobre-hero-texto">
+      <p class="sobre-sobretitulo">SOBRE O {{ configuracao_site.nome_site|default:"UniLar"|upper }}</p>
+      <h1>Seu próximo lar começa <span>perto da universidade.</span></h1>
+      <p>Mudar de cidade para estudar já é um grande passo. Encontrar onde morar não precisa ser mais um problema. O {{ configuracao_site.nome_site|default:"UniLar" }} reúne kitnets, apartamentos, casas e quartos em casas compartilhadas pensados para universitários, com fotos, preço, contas inclusas e localização num só lugar.</p>
+      <div class="sobre-acoes">
+        <a class="sobre-botao" href="{% url 'imoveis' %}"><i class="bi bi-search" aria-hidden="true"></i> Ver imóveis</a>
+        <a class="sobre-botao-secundario" href="{% url 'duvidas' %}"><i class="bi bi-chat-dots" aria-hidden="true"></i> Tirar uma dúvida</a>
+      </div>
+    </div>
+    <figure class="sobre-hero-foto">
+      <img src="{% static 'imagens/universidade.jpg' %}" alt="Campus universitário">
+      <figcaption><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> Aluguel fácil, vida mais simples.</figcaption>
+    </figure>
+  </section>
+
+  <!-- Números reais do catálogo -->
+  <section class="sobre-numeros" aria-label="O UniLar em números">
+    <div><strong>{{ total_imoveis }}</strong><span>imóve{{ total_imoveis|pluralize:"l disponível,is disponíveis" }}</span></div>
+    <div><strong>{{ total_cidades }}</strong><span>cidade{{ total_cidades|pluralize }} atendida{{ total_cidades|pluralize }}</span></div>
+    <div><strong>{{ total_tipos }}</strong><span>tipos de moradia</span></div>
+    <div><strong>R$ 0</strong><span>para buscar e tirar dúvidas</span></div>
+  </section>
+  {% if cidades %}<p class="sobre-cidades"><i class="bi bi-pin-map" aria-hidden="true"></i> Hoje estamos em: {{ cidades|join:", " }}.</p>{% endif %}
+
+  <!-- Por que existimos -->
+  <section class="sobre-bloco">
+    <div class="sobre-bloco-titulo">
+      <p class="sobre-sobretitulo">POR QUE O UNILAR EXISTE</p>
+      <h2>Procurar moradia à distância é difícil. A gente simplifica.</h2>
+    </div>
+    <div class="sobre-cards">
+      <article>
+        <i class="bi bi-eye" aria-hidden="true"></i>
+        <h3>Tudo à vista</h3>
+        <p>Fotos, valor do aluguel, contas inclusas, número de quartos e comodidades no mesmo padrão em todos os anúncios. Dá para comparar sem surpresa.</p>
+      </article>
+      <article>
+        <i class="bi bi-map" aria-hidden="true"></i>
+        <h3>Perto do que importa</h3>
+        <p>Cada imóvel mostra no mapa a universidade, mercados, farmácias e pontos de ônibus ao redor, para você decidir antes mesmo de visitar.</p>
+      </article>
+      <article>
+        <i class="bi bi-chat-heart" aria-hidden="true"></i>
+        <h3>Resposta de verdade</h3>
+        <p>Ficou com dúvida sobre um imóvel? Você pergunta pelo site e a resposta da equipe aparece na sua conta. Sem grupo de mensagens perdido.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Como funciona -->
+  <section class="sobre-bloco sobre-passos-bloco">
+    <div class="sobre-bloco-titulo">
+      <p class="sobre-sobretitulo">COMO FUNCIONA</p>
+      <h2>Do primeiro clique até a mudança</h2>
+    </div>
+    <ol class="sobre-passos">
+      <li><span>1</span><div><strong>Busque</strong><p>Filtre por cidade, tipo de imóvel e faixa de preço.</p></div></li>
+      <li><span>2</span><div><strong>Compare</strong><p>Veja fotos, comodidades, contas inclusas e o mapa da região.</p></div></li>
+      <li><span>3</span><div><strong>Salve</strong><p>Guarde os favoritos na sua conta e acesse de qualquer lugar.</p></div></li>
+      <li><span>4</span><div><strong>Pergunte</strong><p>Tire suas dúvidas com a equipe e combine os próximos passos.</p></div></li>
+    </ol>
+  </section>
+
+  {% if configuracao_site.informacoes_institucionais %}
+  <!-- Texto editável pela Administração (Configurações do site) -->
+  <section class="sobre-bloco sobre-historia">
+    <div class="sobre-bloco-titulo">
+      <p class="sobre-sobretitulo">NOSSA HISTÓRIA</p>
+      <h2>Quem está por trás do {{ configuracao_site.nome_site|default:"UniLar" }}</h2>
+    </div>
+    <div class="sobre-historia-texto">{{ configuracao_site.informacoes_institucionais|linebreaks }}</div>
+  </section>
+  {% endif %}
+
+  <!-- Valores -->
+  <section class="sobre-bloco">
+    <div class="sobre-bloco-titulo">
+      <p class="sobre-sobretitulo">NO QUE ACREDITAMOS</p>
+      <h2>Compromissos com quem usa o site</h2>
+    </div>
+    <ul class="sobre-valores">
+      <li><i class="bi bi-shield-lock" aria-hidden="true"></i><div><strong>Seus dados protegidos</strong><p>Senhas guardadas com criptografia, login com Google e CPF exibido parcialmente escondido.</p></div></li>
+      <li><i class="bi bi-receipt" aria-hidden="true"></i><div><strong>Preço sem pegadinha</strong><p>O valor mensal e as contas inclusas aparecem antes de qualquer conversa.</p></div></li>
+      <li><i class="bi bi-mortarboard" aria-hidden="true"></i><div><strong>Foco no estudante</strong><p>Cada página foi pensada para quem precisa de um lugar perto da faculdade.</p></div></li>
+    </ul>
+  </section>
+
+  {% if destaques %}
+  <section class="sobre-bloco">
+    <div class="sobre-bloco-titulo sobre-titulo-linha">
+      <div><p class="sobre-sobretitulo">COMECE POR AQUI</p><h2>Alguns imóveis disponíveis agora</h2></div>
+      <a class="sobre-link" href="{% url 'imoveis' %}">Ver todos <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+    <div class="sobre-imoveis">
+      {% for imovel in destaques %}
+      <a class="sobre-imovel" href="{% url 'imovel_publico' imovel.slug %}">
+        {% if imovel.imagem_url %}<img src="{{ imovel.imagem_url }}" alt="" loading="lazy">{% else %}<img src="{% static imovel.imagem %}" alt="" loading="lazy">{% endif %}
+        <span><strong>{{ imovel.titulo }}</strong><small>{{ imovel.cidade }} · R$ {{ imovel.preco }}/mês</small></span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Chamada final -->
+  <section class="sobre-final">
+    <div>
+      <h2>Tem um imóvel para alugar a estudantes?</h2>
+      <p>Anuncie no {{ configuracao_site.nome_site|default:"UniLar" }} e seja encontrado por quem procura moradia perto da universidade.</p>
+    </div>
+    <div class="sobre-contato">
+      {% if configuracao_site.email_atendimento %}<p><i class="bi bi-envelope" aria-hidden="true"></i> {{ configuracao_site.email_atendimento }}</p>{% endif %}
+      {% if configuracao_site.telefone %}<p><i class="bi bi-telephone" aria-hidden="true"></i> {{ configuracao_site.telefone }}</p>{% endif %}
+      {% if configuracao_site.instagram %}<a href="{{ configuracao_site.instagram }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-instagram" aria-hidden="true"></i> Instagram</a>{% endif %}
+      <a class="sobre-botao sobre-botao-claro" href="{% url 'duvidas' %}">Fale com a gente <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </div>
+  </section>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
