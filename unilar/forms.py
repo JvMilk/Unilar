@@ -228,6 +228,23 @@ class MultipleImageField(forms.ImageField):
         return [super().clean(upload, initial) for upload in files]
 
 
+def otimizar_foto_imovel(arquivo):
+    """Reduz a foto para no máximo 1600 px, corrige a rotação e regrava como JPEG (sem metadados)."""
+    from io import BytesIO
+    from pathlib import Path
+    from PIL import Image, ImageOps
+    from django.core.files.base import ContentFile
+    from django.utils.text import slugify
+
+    arquivo.seek(0)
+    imagem = ImageOps.exif_transpose(Image.open(arquivo)).convert('RGB')
+    imagem.thumbnail((1600, 1600), Image.Resampling.LANCZOS)
+    saida = BytesIO()
+    imagem.save(saida, format='JPEG', quality=82, optimize=True, progressive=True)
+    nome = slugify(Path(arquivo.name).stem)[:60] or 'foto'
+    return ContentFile(saida.getvalue(), name=f'{nome}.jpg')
+
+
 class AdminImovelForm(forms.ModelForm):
     comodidades = forms.MultipleChoiceField(
         choices=[(chave, nome) for chave, nome, _ in COMODIDADES],
@@ -283,7 +300,10 @@ class AdminImovelForm(forms.ModelForm):
         for foto in fotos:
             if foto.size > 10 * 1024 * 1024:
                 raise forms.ValidationError('Cada imagem deve ter no máximo 10 MB.')
-        return fotos
+        try:
+            return [otimizar_foto_imovel(foto) for foto in fotos]
+        except Exception:
+            raise forms.ValidationError('Não foi possível ler uma das imagens. Envie fotos JPG, PNG ou WEBP.')
 
 
 class AdminConfiguracaoForm(forms.ModelForm):

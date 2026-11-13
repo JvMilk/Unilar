@@ -489,6 +489,7 @@ class AdminAreaTests(TestCase):
             self.assertEqual(imovel.proprietario, self.user)
             self.assertEqual(imovel.fotos.count(), 1)
             arquivo_foto = imovel.fotos.first().imagem.path
+            self.assertTrue(arquivo_foto.endswith('.jpg'))  # foto otimizada e regravada como JPEG
             destaques = self.client.get(reverse('inicio')).context['imoveis']
             self.assertIn(imovel.slug, {item['slug'] for item in destaques})
             self.assertContains(

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from datetime import timedelta
+import sys
 from pathlib import Path
 import os
 from django.core.management.utils import get_random_secret_key
@@ -146,9 +147,10 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # 1) PostgreSQL (Supabase): usado quando DATABASE_URL ou POSTGRES_URL existir.
 #    - Na Vercel, a integracao com o Supabase cria POSTGRES_URL (ou <PREFIXO>_POSTGRES_URL).
 #    - No seu computador, defina DATABASE_URL com a URI do "Session pooler" do Supabase.
-# 2) Sem essas variaveis: SQL Server local (mssql-django + ODBC Driver 18), configurado por
-#    DB_NAME, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_DRIVER
-#    (sem DB_USER, usa autenticacao do Windows). Para SQLite: DB_ENGINE=sqlite
+# 2) Sem essas variaveis, so com escolha explicita:
+#    DB_ENGINE=mssql  -> SQL Server local (DB_NAME, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_DRIVER)
+#    DB_ENGINE=sqlite -> arquivo db.sqlite3
+#    Sem nada definido, o projeto para com uma mensagem explicando como configurar.
 _database_url = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL') or next(
     # a integracao da Vercel pode criar a variavel com prefixo (ex.: SUPA_BD_POSTGRES_URL)
     (valor for nome, valor in sorted(os.environ.items()) if nome.endswith('_POSTGRES_URL') and valor),
@@ -165,14 +167,14 @@ if _database_url:
     # O pooler do Supabase (modo transacao) nao suporta prepared statements nem cursores no servidor.
     _opcoes['prepare_threshold'] = None
     DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
-elif os.environ.get('DB_ENGINE', 'mssql').lower() == 'sqlite':
+elif os.environ.get('DB_ENGINE', '').lower() == 'sqlite':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-else:
+elif os.environ.get('DB_ENGINE', '').lower() == 'mssql':
     _db_user = os.environ.get('DB_USER', '')
     _extra_params = 'TrustServerCertificate=yes;'
     if not _db_user:
@@ -192,6 +194,15 @@ else:
             },
         }
     }
+else:
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured(
+        '\n\nO banco de dados nao esta configurado neste terminal (falta a variavel DATABASE_URL).\n'
+        'Copie o valor de SUPA_BD_POSTGRES_URL (Vercel > Storage > supabase-unix > Show secret) e rode:\n\n'
+        '    setx DATABASE_URL "cole-aqui-a-url"\n\n'
+        'Depois feche e abra o VS Code (ou, so para este terminal: $env:DATABASE_URL = "cole-aqui-a-url").\n'
+    )
 
 
 # Password validation
@@ -238,6 +249,38 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 WHITENOISE_USE_FINDERS = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Fotos dos imóveis
+# Com as chaves S3 do Supabase definidas, as fotos vão para o Supabase Storage (bucket público),
+# e o computador e o site publicado mostram as mesmas imagens. Sem as chaves (ou nos testes),
+# ficam na pasta media/ local.
+SUPABASE_PROJECT_REF = os.environ.get('SUPABASE_PROJECT_REF', 'lrfmpporglcablrynrlh')
+SUPABASE_STORAGE_BUCKET = os.environ.get('SUPABASE_STORAGE_BUCKET', 'imoveis')
+_s3_chave = os.environ.get('SUPABASE_S3_ACCESS_KEY_ID', '')
+_s3_segredo = os.environ.get('SUPABASE_S3_SECRET_ACCESS_KEY', '')
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+}
+if _s3_chave and _s3_segredo and 'test' not in sys.argv[1:2]:
+    STORAGES['default'] = {
+        'BACKEND': 'storages.backends.s3.S3Storage',
+        'OPTIONS': {
+            'bucket_name': SUPABASE_STORAGE_BUCKET,
+            'endpoint_url': f'https://{SUPABASE_PROJECT_REF}.storage.supabase.co/storage/v1/s3',
+            'region_name': os.environ.get('SUPABASE_S3_REGION', 'us-east-1'),
+            'access_key': _s3_chave,
+            'secret_key': _s3_segredo,
+            'addressing_style': 'path',
+            'signature_version': 's3v4',
+            # Endereço público das imagens (o bucket é público para leitura).
+            'custom_domain': f'{SUPABASE_PROJECT_REF}.supabase.co/storage/v1/object/public/{SUPABASE_STORAGE_BUCKET}',
+            'querystring_auth': False,
+            'file_overwrite': False,
+            'default_acl': None,
+            'object_parameters': {'CacheControl': 'public, max-age=31536000'},
+        },
+    }
 
 
 # Email replies are sent only when the SMTP host and sender are configured.
