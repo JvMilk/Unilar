@@ -212,6 +212,16 @@ class Imovel(models.Model):
         return itens[:4]
 
 
+class AcessoDiario(models.Model):
+    dia = models.DateField(unique=True)
+    visualizacoes = models.PositiveBigIntegerField(default=0)
+
+
+class AluguelConfirmado(models.Model):
+    imovel = models.ForeignKey(Imovel, null=True, on_delete=models.SET_NULL)
+    registrado_em = models.DateTimeField(auto_now_add=True, db_index=True)
+
+
 class Favorito(models.Model):
     """Imóvel que um usuário logado salvou como favorito (fica guardado no banco)."""
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favoritos')

@@ -18,6 +18,12 @@
         <small>{{ field.help_text }}</small>
         {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
       </fieldset>
+      {% elif field.name == 'aluguel_confirmado' %}
+      <div class="form-field span-2">
+        <label class="rental-confirmation" for="{{ field.id_for_label }}">{{ field }} <span>{{ field.label }}</span></label>
+        <small>{{ field.help_text }}</small>
+        {% for error in field.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+      </div>
       {% elif field.name != 'fotos' %}
       <label class="form-field {% if field.name == 'descricao' or field.name == 'informacoes_adicionais' %}span-2{% endif %}" for="{{ field.id_for_label }}">
         <span>{{ field.label }}{% if field.field.required %} <b>*</b>{% endif %}</span>{{ field }}

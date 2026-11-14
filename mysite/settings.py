@@ -101,6 +101,7 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'unilar.middleware.contar_acessos_publicos',
     'axes.middleware.AxesMiddleware',  # deve ser o ultimo
 ]
 

@@ -1,23 +1,75 @@
 {% extends "unilar_admin/base.html" %}
+{% load static %}
 {% block title %}Relatórios{% endblock %}
 {% block header_title %}Relatórios{% endblock %}
-{% block header_subtitle %}Indicadores reais da atividade do UniLar{% endblock %}
+{% block header_subtitle %}Audiência, interesse e locações no UniLar{% endblock %}
 {% block breadcrumb %}Relatórios{% endblock %}
 {% block content %}
 <div class="page-heading report-heading">
-  <div><p class="eyebrow">DADOS DA PLATAFORMA</p><h2>Relatórios do UniLar</h2><p>Resumo mensal de cadastros, dúvidas e anúncios ativos nos últimos 12 meses.</p></div>
-  <a class="button button-light" href="{% url 'admin_dashboard' %}"><i class="bi bi-arrow-left"></i> Voltar ao painel</a>
+  <div>
+    <h2>{{ mes_atual.mes|date:"F Y"|capfirst }}</h2>
+    <p>Indicadores do mês até hoje</p>
+  </div>
+  <form method="get" class="period-filter report-period">
+    <label for="meses">Histórico</label>
+    <select id="meses" name="meses">
+      {% for periodo in periodos %}
+      <option value="{{ periodo }}" {% if quantidade == periodo %}selected{% endif %}>Últimos {{ periodo }} meses</option>
+      {% endfor %}
+    </select>
+    <button class="button button-light" type="submit">Aplicar</button>
+  </form>
 </div>
+
 <div class="report-stat-grid">
-  <article class="report-stat"><span class="stat-icon blue"><i class="bi bi-buildings"></i></span><span><small>Imóveis cadastrados</small><strong>{{ total_imoveis }}</strong></span></article>
-  <article class="report-stat"><span class="stat-icon green"><i class="bi bi-house-check"></i></span><span><small>Disponíveis agora</small><strong>{{ disponiveis }}</strong></span></article>
-  <article class="report-stat"><span class="stat-icon violet"><i class="bi bi-chat-dots"></i></span><span><small>Dúvidas recebidas</small><strong>{{ total_duvidas }}</strong></span></article>
-  <article class="report-stat"><span class="stat-icon amber"><i class="bi bi-people"></i></span><span><small>Usuários cadastrados</small><strong>{{ total_usuarios }}</strong></span></article>
+  <article class="report-stat"><span class="stat-icon blue"><i class="bi bi-eye" aria-hidden="true"></i></span><div><small>Acessos ao site</small><strong>{{ mes_atual.acessos|default_if_none:"—" }}</strong><span>Visualizações de páginas públicas</span></div></article>
+  <article class="report-stat"><span class="stat-icon green"><i class="bi bi-key" aria-hidden="true"></i></span><div><small>Aluguéis pelo UniLar</small><strong>{{ mes_atual.alugueis }}</strong><span>Confirmados pela administração</span></div></article>
+  <article class="report-stat"><span class="stat-icon violet"><i class="bi bi-calendar-check" aria-hidden="true"></i></span><div><small>Pedidos de visita</small><strong>{{ mes_atual.visitas }}</strong><span>Solicitações recebidas</span></div></article>
+  <article class="report-stat"><span class="stat-icon amber"><i class="bi bi-person-plus" aria-hidden="true"></i></span><div><small>Novas contas</small><strong>{{ mes_atual.usuarios }}</strong><span>Usuários cadastrados</span></div></article>
 </div>
+
+<div class="report-charts">
+  <section class="panel-card report-panel">
+    <div class="panel-heading"><div><h2>Acessos ao site</h2>
+      <p>{% if primeiro_acesso %}Primeiro acesso registrado em {{ primeiro_acesso|date:"d/m/Y" }}{% else %}Aguardando as primeiras visualizações nas páginas públicas{% endif %}</p>
+    </div><i class="bi bi-activity" aria-hidden="true"></i></div>
+    {% if primeiro_acesso %}
+    <div class="report-chart" hidden><canvas id="report-access-chart" role="img" aria-label="Visualizações por mês. Os valores estão na tabela abaixo."></canvas></div>
+    {% endif %}
+  </section>
+  <section class="panel-card report-panel">
+    <div class="panel-heading"><div><h2>Situação dos imóveis</h2><p>{{ total_imoveis }} no catálogo</p></div><i class="bi bi-buildings" aria-hidden="true"></i></div>
+    <ul class="report-status-list">
+      {% for item in situacao %}
+      <li>
+        <div><span class="status status-{{ item.status }}">{{ item.nome }}</span><strong>{{ item.total }}</strong></div>
+        <progress class="report-status-progress" value="{{ item.percentual }}" max="100" aria-label="{{ item.nome }}"></progress>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section class="panel-card report-panel report-panel-wide">
+    <div class="panel-heading"><div><h2>Atividade e locações</h2><p>Dúvidas, pedidos de visita e confirmações de aluguel por mês</p></div><i class="bi bi-bar-chart-line" aria-hidden="true"></i></div>
+    <div class="report-chart" hidden><canvas id="report-activity-chart" role="img" aria-label="Atividade e locações por mês. Os valores estão na tabela abaixo."></canvas></div>
+  </section>
+</div>
+
 <section class="panel-card report-table-panel">
-  <div class="panel-heading"><div><h2>Atividade mensal</h2><p>Contagem registrada no banco de dados por mês</p></div><i class="bi bi-calendar3"></i></div>
-  <div class="table-wrap"><table class="admin-table"><thead><tr><th>Mês</th><th>Imóveis cadastrados</th><th>Dúvidas recebidas</th></tr></thead><tbody>
-    {% for linha in relatorio %}<tr><td><strong>{{ linha.mes|date:"F Y" }}</strong></td><td>{{ linha.imoveis }}</td><td>{{ linha.duvidas }}</td></tr>{% endfor %}
-  </tbody></table></div>
+  <div class="panel-heading"><div><h2>Detalhamento mensal</h2><p>O mês atual está em andamento. O traço indica acesso sem dados coletados.</p></div><i class="bi bi-table" aria-hidden="true"></i></div>
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead><tr><th scope="col">Mês</th><th scope="col">Acessos</th><th scope="col">Aluguéis confirmados</th><th scope="col">Pedidos de visita</th><th scope="col">Dúvidas recebidas</th><th scope="col">Novas contas</th><th scope="col">Imóveis cadastrados</th></tr></thead>
+      <tbody>
+        {% for linha in relatorio reversed %}
+        <tr><th scope="row">{{ linha.mes|date:"M Y"|capfirst }}</th><td>{{ linha.acessos|default_if_none:"—" }}</td><td>{{ linha.alugueis }}</td><td>{{ linha.visitas }}</td><td>{{ linha.duvidas }}</td><td>{{ linha.usuarios }}</td><td>{{ linha.imoveis }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </section>
+{% endblock %}
+{% block scripts %}
+{{ relatorio|json_script:"report-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+<script src="{% static 'js/relatorios.js' %}" defer></script>
 {% endblock %}

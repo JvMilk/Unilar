@@ -246,6 +246,11 @@ def otimizar_foto_imovel(arquivo):
 
 
 class AdminImovelForm(forms.ModelForm):
+    aluguel_confirmado = forms.BooleanField(
+        required=False,
+        label='Confirmar aluguel pelo UniLar',
+        help_text='Marque ao mudar o status para Alugado, se a locação aconteceu pelo UniLar.',
+    )
     comodidades = forms.MultipleChoiceField(
         choices=[(chave, nome) for chave, nome, _ in COMODIDADES],
         widget=forms.CheckboxSelectMultiple,
@@ -294,6 +299,14 @@ class AdminImovelForm(forms.ModelForm):
     def clean_camas(self):
         valor = self.cleaned_data.get('camas')
         return 1 if valor is None else valor
+
+    def clean(self):
+        dados = super().clean()
+        if dados.get('aluguel_confirmado') and (
+            dados.get('status') != Imovel.Status.ALUGADO or self.initial.get('status') == Imovel.Status.ALUGADO
+        ):
+            self.add_error('aluguel_confirmado', 'Confirme o aluguel ao alterar o status para Alugado.')
+        return dados
 
     def clean_fotos(self):
         fotos = self.cleaned_data['fotos']
