@@ -196,7 +196,9 @@ def contexto_detalhe(request, imovel):
             'desde': imovel.proprietario.date_joined.year,
         }
     descricao = imovel.descricao.strip()
-    endereco = f'{imovel.endereco}, {imovel.bairro}, {imovel.cidade}'
+    # Busca do mapa: rua, número e cidade. O bairro fica de fora porque o Google nem sempre usa o mesmo
+    # nome de bairro e, quando não reconhece, deixa de achar a rua (o bairro continua no texto do anúncio).
+    endereco = f'{imovel.endereco}, {imovel.cidade}'
     return {
         'imovel': imovel,
         'fotos': fotos,
