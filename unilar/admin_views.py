@@ -1,5 +1,5 @@
 import smtplib
-from datetime import date, datetime, time, timedelta
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
@@ -8,17 +8,16 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Count, Sum
-from django.db.models.functions import TruncDate, TruncMonth
+from django.db.models import Count
+from django.db.models.functions import TruncDate
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from .forms import AdminConfiguracaoForm, AdminImovelForm
-from .middleware import FUSO_RELATORIOS
 from .models import (
-    AcessoDiario, AluguelConfirmado, ConfiguracaoSite, ContatoImovel, DadosPainel,
-    FotoImovel, Imovel, PerfilCadastro, SolicitacaoVisita,
+    ConfiguracaoSite, ContatoImovel, DadosPainel, FotoImovel, Imovel,
+    PerfilCadastro,
 )
 
 
@@ -76,72 +75,6 @@ def dashboard(request):
 
 
 @admin_required
-def relatorios_admin(request):
-    hoje = timezone.localdate(timezone=FUSO_RELATORIOS)
-    periodos = (3, 6, 12)
-    quantidade = next((periodo for periodo in periodos if str(periodo) == request.GET.get('meses')), 12)
-    meses = []
-    for offset in range(quantidade - 1, -1, -1):
-        indice_mes = hoje.year * 12 + hoje.month - 1 - offset
-        meses.append(date(indice_mes // 12, indice_mes % 12 + 1, 1))
-
-    inicio = datetime.combine(meses[0], time.min, tzinfo=FUSO_RELATORIOS)
-    fim = datetime.combine(hoje + timedelta(days=1), time.min, tzinfo=FUSO_RELATORIOS)
-
-    def dados_mensais(queryset, campo='criado_em'):
-        linhas = (
-            queryset.filter(**{f'{campo}__gte': inicio, f'{campo}__lt': fim})
-            .annotate(mes=TruncMonth(campo, tzinfo=FUSO_RELATORIOS))
-            .values('mes').annotate(total=Count('id')).order_by('mes')
-        )
-        return {linha['mes'].date().replace(day=1): linha['total'] for linha in linhas}
-
-    acessos_por_mes = {
-        linha['mes']: linha['total']
-        for linha in AcessoDiario.objects.filter(dia__range=(meses[0], hoje))
-        .annotate(mes=TruncMonth('dia')).values('mes').annotate(total=Sum('visualizacoes')).order_by('mes')
-    }
-    primeiro_acesso = AcessoDiario.objects.filter(dia__lte=hoje).order_by('dia').values_list('dia', flat=True).first()
-    series = {
-        'imoveis': dados_mensais(Imovel.objects.all()),
-        'duvidas': dados_mensais(ContatoImovel.objects.all()),
-        'usuarios': dados_mensais(get_user_model().objects.all(), 'date_joined'),
-        'visitas': dados_mensais(SolicitacaoVisita.objects.all()),
-        'alugueis': dados_mensais(AluguelConfirmado.objects.all(), 'registrado_em'),
-    }
-    relatorio = []
-    for mes in meses:
-        linha = {nome: dados.get(mes, 0) for nome, dados in series.items()}
-        linha['mes'] = mes
-        linha['acessos'] = (
-            acessos_por_mes.get(mes, 0)
-            if primeiro_acesso and mes >= primeiro_acesso.replace(day=1) else None
-        )
-        relatorio.append(linha)
-
-    status_totais = {
-        linha['status']: linha['total']
-        for linha in Imovel.objects.values('status').annotate(total=Count('pk')).order_by()
-    }
-    total_imoveis = sum(status_totais.values())
-    situacao = [{
-        'nome': label,
-        'status': status,
-        'total': status_totais.get(status, 0),
-        'percentual': round(status_totais.get(status, 0) * 100 / total_imoveis) if total_imoveis else 0,
-    } for status, label in Imovel.Status.choices]
-    return render(request, 'admin/relatorios.html', {
-        'relatorio': relatorio,
-        'mes_atual': relatorio[-1],
-        'primeiro_acesso': primeiro_acesso,
-        'periodos': periodos,
-        'quantidade': quantidade,
-        'situacao': situacao,
-        'total_imoveis': total_imoveis,
-    })
-
-
-@admin_required
 def imoveis_admin(request):
     imoveis = Imovel.objects.select_related('proprietario').prefetch_related('fotos')
     busca = request.GET.get('q', '').strip()
@@ -174,8 +107,6 @@ def imovel_form(request, pk=None):
                     'form': form, 'imovel': imovel, 'fotos': imovel.fotos.all() if imovel else [],
                 })
             imovel = form.save()
-            if form.cleaned_data['aluguel_confirmado']:
-                AluguelConfirmado.objects.create(imovel=imovel)
             for foto in form.cleaned_data['fotos']:
                 FotoImovel.objects.create(imovel=imovel, imagem=foto)
             ids_excluidos = request.POST.getlist('excluir_fotos')

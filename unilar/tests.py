@@ -10,11 +10,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.utils import timezone
 from unittest.mock import patch
 
-from .middleware import FUSO_RELATORIOS
-from .models import AcessoDiario, AluguelConfirmado, ContatoImovel, Imovel, PerfilCadastro, SolicitacaoVisita
+from .models import ContatoImovel, Imovel, PerfilCadastro, SolicitacaoVisita
 
 
 class IntegracaoImovelTests(TestCase):
@@ -335,47 +333,10 @@ class AdminAreaTests(TestCase):
         dados.update(overrides)
         return dados
 
-    def test_relatorio_agrega_visualizacoes_publicas_e_filtra_historico(self):
-        relatorios = reverse('admin_relatorios')
-        inicial = self.client.get(relatorios)
-        self.assertIsNone(inicial.context['mes_atual']['acessos'])
-        self.client.get(reverse('inicio'))
-        self.client.get(reverse('imoveis'))
-        self.client.head(reverse('inicio'))
-        self.client.get(reverse('imovel_publico', args=['inexistente']))
-        dia = timezone.localdate(timezone=FUSO_RELATORIOS)
-        self.assertEqual(AcessoDiario.objects.get(dia=dia).visualizacoes, 2)
-
-        resposta = self.client.get(relatorios, {'meses': 3})
-        self.assertEqual(len(resposta.context['relatorio']), 3)
-        self.assertIsNone(resposta.context['relatorio'][0]['acessos'])
-        self.assertEqual(resposta.context['mes_atual']['acessos'], 2)
-        self.assertContains(resposta, 'Acessos ao site')
-
-    def test_relatorio_conta_apenas_alugueis_confirmados_e_preserva_historico(self):
-        novo = reverse('admin_imovel_novo')
-        status = Imovel.Status.ALUGADO
-        self.assertRedirects(self.client.post(novo, self.dados_imovel(status=status)), reverse('admin_imoveis'))
-        self.assertFalse(AluguelConfirmado.objects.exists())
-
-        self.assertRedirects(self.client.post(novo, self.dados_imovel(titulo='Locação pelo UniLar')), reverse('admin_imoveis'))
-        imovel = Imovel.objects.get(titulo='Locação pelo UniLar')
-        editar = reverse('admin_imovel_editar', args=[imovel.pk])
-        dados = self.dados_imovel(titulo=imovel.titulo, status=status, aluguel_confirmado='on')
-        self.assertRedirects(self.client.post(editar, dados), reverse('admin_imoveis'))
-        repetido = self.client.post(editar, dados)
-        self.assertFalse(repetido.context['form'].is_valid())
-        self.assertEqual(AluguelConfirmado.objects.count(), 1)
-
-        imovel.delete()
-        relatorio = self.client.get(reverse('admin_relatorios'))
-        self.assertEqual(relatorio.context['mes_atual']['alugueis'], 1)
-
     def test_painel_e_secoes_exigem_usuario_staff(self):
         self.client.logout()
         urls = [
             reverse('admin_dashboard'),
-            reverse('admin_relatorios'),
             reverse('admin_imoveis'),
             reverse('admin_anuncios'),
             reverse('admin_mensagens'),
@@ -428,10 +389,6 @@ class AdminAreaTests(TestCase):
         response = self.client.get(reverse('admin_dashboard'), {'periodo': '90'})
         self.assertEqual(len(response.context['chart_labels']), 90)
 
-        report = self.client.get(reverse('admin_relatorios'))
-        self.assertEqual(report.status_code, 200)
-        self.assertEqual(len(report.context['relatorio']), 12)
-        self.assertContains(report, 'Atividade e locações')
 
     def test_login_admin_abre_dashboard_e_mostra_acesso_no_site(self):
         self.client.logout()

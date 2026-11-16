@@ -4,7 +4,6 @@ from . import admin_views
 
 urlpatterns = [
     path('administracao/', admin_views.dashboard, name='admin_dashboard'),
-    path('administracao/relatorios/', admin_views.relatorios_admin, name='admin_relatorios'),
     path('administracao/imoveis/', admin_views.imoveis_admin, name='admin_imoveis'),
     path('administracao/imoveis/novo/', admin_views.imovel_form, name='admin_imovel_novo'),
     path('administracao/imoveis/<int:pk>/editar/', admin_views.imovel_form, name='admin_imovel_editar'),

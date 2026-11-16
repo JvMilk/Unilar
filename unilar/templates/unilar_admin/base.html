@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Administração{% endblock %} | {{ configuracao_site.nome_site|default:"UniLar" }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="{% static 'css/admin.css' %}?v=20261113-relatorios" rel="stylesheet">
+  <link href="{% static 'css/admin.css' %}?v=20261116" rel="stylesheet">
 </head>
 <body class="admin-page">
   <button class="admin-menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
@@ -22,7 +22,6 @@
       <a href="{% url 'admin_mensagens' %}" {% if request.resolver_match.url_name == 'admin_mensagens' or request.resolver_match.url_name == 'admin_mensagens_detalhe' %}aria-current="page"{% endif %}><i class="bi bi-chat"></i> Dúvidas e mensagens{% if admin_pending_questions %}<span class="nav-count">{{ admin_pending_questions }}</span>{% endif %}</a>
       <a href="{% url 'admin_usuarios' %}" {% if request.resolver_match.url_name == 'admin_usuarios' or request.resolver_match.url_name == 'admin_usuario_atualizar' %}aria-current="page"{% endif %}><i class="bi bi-people"></i> Usuários</a>
       <a href="{% url 'admin_anuncios' %}" {% if request.resolver_match.url_name == 'admin_anuncios' %}aria-current="page"{% endif %}><i class="bi bi-megaphone"></i> Anúncios</a>
-      <a href="{% url 'admin_relatorios' %}" {% if request.resolver_match.url_name == 'admin_relatorios' %}aria-current="page"{% endif %}><i class="bi bi-bar-chart"></i> Relatórios</a>
       <a href="{% url 'admin_configuracoes' %}" {% if request.resolver_match.url_name == 'admin_configuracoes' %}aria-current="page"{% endif %}><i class="bi bi-gear"></i> Configurações</a>
     </nav>
     <div class="admin-sidebar-bottom">
