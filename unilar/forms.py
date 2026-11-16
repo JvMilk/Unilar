@@ -256,7 +256,7 @@ class AdminImovelForm(forms.ModelForm):
     fotos = MultipleImageField(
         required=False,
         label='Adicionar fotos',
-        help_text='Selecione uma ou mais imagens. As fotos atuais são mantidas.',
+        help_text='Selecione várias de uma vez ou adicione aos poucos. As fotos atuais são mantidas.',
     )
 
     class Meta:

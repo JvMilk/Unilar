@@ -32,13 +32,37 @@
         });
     }
 
-    // Ao abrir a galeria pela foto clicada, rola até ela.
+    // Carrossel de fotos: abre na foto clicada, atualiza contador e miniaturas, aceita setas do teclado.
     const modalFotos = document.getElementById('modalFotos');
-    if (modalFotos) {
-        modalFotos.addEventListener('shown.bs.modal', function (evento) {
-            const indice = evento.relatedTarget ? evento.relatedTarget.dataset.foto : '0';
-            const foto = document.getElementById('foto-' + indice);
-            if (foto && indice !== '0') foto.scrollIntoView({ block: 'start' });
+    const carrosselEl = document.getElementById('carrosselFotos');
+    if (modalFotos && carrosselEl && window.bootstrap) {
+        const carrossel = bootstrap.Carousel.getOrCreateInstance(carrosselEl, { interval: false, ride: false, keyboard: false });
+        const atual = document.getElementById('fotosAtual');
+        const miniaturas = modalFotos.querySelectorAll('.fotos-miniaturas button');
+        const marcar = function (indice) {
+            if (atual) atual.textContent = String(indice + 1);
+            miniaturas.forEach(function (botao, i) {
+                botao.classList.toggle('active', i === indice);
+                if (i === indice) {
+                    botao.setAttribute('aria-current', 'true');
+                    botao.scrollIntoView({ block: 'nearest', inline: 'center' });
+                } else {
+                    botao.removeAttribute('aria-current');
+                }
+            });
+        };
+        carrosselEl.addEventListener('slid.bs.carousel', function (evento) { marcar(evento.to); });
+        modalFotos.addEventListener('show.bs.modal', function (evento) {
+            const indice = Number(evento.relatedTarget ? evento.relatedTarget.dataset.foto : 0) || 0;
+            carrosselEl.classList.remove('slide');
+            carrossel.to(indice);
+            marcar(indice);
+        });
+        modalFotos.addEventListener('shown.bs.modal', function () { carrosselEl.classList.add('slide'); });
+        document.addEventListener('keydown', function (evento) {
+            if (!modalFotos.classList.contains('show')) return;
+            if (evento.key === 'ArrowLeft') carrossel.prev();
+            if (evento.key === 'ArrowRight') carrossel.next();
         });
     }
 

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Administração{% endblock %} | {{ configuracao_site.nome_site|default:"UniLar" }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="{% static 'css/admin.css' %}?v=20261116" rel="stylesheet">
+  <link href="{% static 'css/admin.css' %}?v=20261116-fotos" rel="stylesheet">
 </head>
 <body class="admin-page">
   <button class="admin-menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
@@ -67,7 +67,7 @@
       {% block content %}{% endblock %}
     </section>
   </main>
-  <script src="{% static 'js/admin.js' %}" defer></script>
+  <script src="{% static 'js/admin.js' %}?v=20261116-fotos" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
