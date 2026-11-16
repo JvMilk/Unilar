@@ -520,7 +520,11 @@ class AdminAreaTests(TestCase):
             self.assertEqual(imovel.titulo, 'Residência atualizada')
             self.assertEqual(imovel.status, Imovel.Status.ALUGADO)
             self.assertNotContains(self.client.get(reverse('imoveis')), 'Residência atualizada')
+            # a equipe ainda pré-visualiza; visitantes não encontram o anúncio
+            self.assertContains(self.client.get(reverse('imovel_publico', args=[imovel.slug])), 'Pré-visualização')
+            self.client.logout()
             self.assertEqual(self.client.get(reverse('imovel_publico', args=[imovel.slug])).status_code, 404)
+            self.client.force_login(self.staff)
 
             response = self.client.post(reverse('admin_imovel_excluir', args=[imovel.pk]))
             self.assertRedirects(response, reverse('admin_imoveis'))
@@ -571,8 +575,8 @@ class AdminAreaTests(TestCase):
         self.assertContains(self.client.get(reverse('imoveis'), {'q': 'Kitnet atualizada'}), 'Kitnet atualizada')
 
         self.client.post(
-            reverse('admin_anuncio_status', args=[imovel.pk]),
-            {'status': Imovel.Status.ALUGADO},
+            reverse('admin_imovel_editar', args=[imovel.pk]),
+            self.dados_imovel(titulo='Kitnet atualizada', preco='1050.00', status=Imovel.Status.ALUGADO),
         )
         self.assertEqual(self.client.get(reverse('detalhe_imovel')).status_code, 404)
         self.assertNotContains(self.client.get(reverse('imoveis')), 'Kitnet atualizada')
@@ -611,11 +615,41 @@ class AdminAreaTests(TestCase):
         self.client.post(reverse('admin_mensagem_responder', args=[duvida.pk]), {'acao': 'excluir'})
         self.assertFalse(ContatoImovel.objects.filter(pk=duvida.pk).exists())
 
+    def test_anuncios_pendentes_aprovar_e_recusar(self):
+        def pendente(titulo):
+            return Imovel.objects.create(
+                proprietario=self.user, titulo=titulo, descricao='Enviado pelo site.', preco='700.00',
+                endereco='Rua A, 1', bairro='Centro', cidade='Patos de Minas - MG', area=30,
+                tipo=Imovel.Tipo.KITNET, status=Imovel.Status.PENDENTE,
+            )
+        aprovar, recusar = pendente('Kitnet para aprovar'), pendente('Kitnet para recusar')
+        disponivel = Imovel.objects.get(slug='kitnet-no-centro')
+
+        pagina = self.client.get(reverse('admin_anuncios'))
+        self.assertContains(pagina, 'Anúncios pendentes')
+        self.assertContains(pagina, aprovar.titulo)
+        self.assertNotContains(pagina, disponivel.titulo)
+        self.assertContains(pagina, '<span class="nav-count">2</span>', html=True)
+
+        self.assertEqual(self.client.get(reverse('admin_anuncio_status', args=[aprovar.pk])).status_code, 405)
+        self.client.post(reverse('admin_anuncio_status', args=[aprovar.pk]), {'acao': 'aprovar'})
+        self.client.post(reverse('admin_anuncio_status', args=[recusar.pk]), {'acao': 'recusar'})
+        aprovar.refresh_from_db()
+        recusar.refresh_from_db()
+        self.assertEqual(aprovar.status, Imovel.Status.DISPONIVEL)
+        self.assertEqual(recusar.status, Imovel.Status.INATIVO)
+        self.assertNotContains(self.client.get(reverse('admin_anuncios')), reverse('admin_imovel_editar', args=[aprovar.pk]))
+        # só anúncios pendentes podem ser moderados por esta tela
+        self.assertEqual(
+            self.client.post(reverse('admin_anuncio_status', args=[disponivel.pk]), {'acao': 'recusar'}).status_code,
+            404,
+        )
+
+        self.client.logout()
+        self.assertContains(self.client.get(reverse('imovel_publico', args=[aprovar.slug])), aprovar.titulo)
+        self.assertEqual(self.client.get(reverse('imovel_publico', args=[recusar.slug])).status_code, 404)
+
     def test_anuncios_usuarios_e_configuracoes(self):
-        imovel = Imovel.objects.get(slug='kitnet-no-centro')
-        self.client.post(reverse('admin_anuncio_status', args=[imovel.pk]), {'status': 'pendente'})
-        imovel.refresh_from_db()
-        self.assertEqual(imovel.status, Imovel.Status.PENDENTE)
 
         PerfilCadastro.objects.create(
             usuario=self.user, nome='Anunciante de Teste', cpf='52998224725',
@@ -662,3 +696,59 @@ class AdminAreaTests(TestCase):
         self.client.post(reverse('admin_usuario_atualizar', args=[self.user.pk]), {'acao': 'staff'})
         self.user.refresh_from_db()
         self.assertTrue(self.user.is_staff)
+
+
+class AnunciarImovelTests(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        self.user = get_user_model().objects.create_user(
+            username='dono@example.com', email='dono@example.com', password='Teste123!',
+        )
+        self.dados = {
+            'titulo': 'Kitnet perto da faculdade',
+            'descricao': 'Kitnet mobiliada a duas quadras do campus.',
+            'preco': '850.00',
+            'endereco': 'Rua das Palmeiras, 40',
+            'bairro': 'Centro',
+            'cidade': 'Patos de Minas - MG',
+            'tipo': 'kitnet',
+            'quartos': '1', 'banheiros': '1', 'vagas': '0', 'area': '28',
+            'comodidades': ['wifi', 'mobiliado'],
+        }
+
+    def test_exige_login(self):
+        resposta = self.client.get(reverse('anunciar'))
+        self.assertRedirects(resposta, f"{reverse('login')}?next={reverse('anunciar')}", fetch_redirect_response=False)
+
+    def test_envio_fica_pendente_e_so_dono_e_equipe_pre_visualizam(self):
+        from django.contrib.auth import get_user_model
+        self.client.force_login(self.user)
+        pagina = self.client.get(reverse('anunciar'))
+        self.assertContains(pagina, 'Enviar para análise')
+        self.assertNotContains(pagina, 'name="status"')
+        self.assertNotContains(pagina, 'name="proprietario"')
+
+        # campos de status/responsável enviados à força são ignorados
+        resposta = self.client.post(reverse('anunciar'), {**self.dados, 'status': 'disponivel', 'proprietario': '999'}, follow=True)
+        self.assertRedirects(resposta, reverse('anunciar'))
+        self.assertContains(resposta, 'enviado! A equipe UniLar vai analisar')
+        imovel = Imovel.objects.get(titulo='Kitnet perto da faculdade')
+        self.assertEqual(imovel.status, Imovel.Status.PENDENTE)
+        self.assertEqual(imovel.proprietario, self.user)
+        self.assertEqual(imovel.comodidades, ['wifi', 'mobiliado'])
+
+        pagina = self.client.get(reverse('anunciar'))
+        self.assertContains(pagina, 'Em análise')
+        self.assertNotContains(self.client.get(reverse('imoveis')), imovel.titulo)
+        self.assertContains(self.client.get(reverse('imovel_publico', args=[imovel.slug])), 'Pré-visualização')
+
+        outro = get_user_model().objects.create_user(username='outro@example.com', email='outro@example.com', password='Teste123!')
+        self.client.force_login(outro)
+        self.assertEqual(self.client.get(reverse('imovel_publico', args=[imovel.slug])).status_code, 404)
+
+    def test_formulario_invalido_mostra_erros(self):
+        self.client.force_login(self.user)
+        resposta = self.client.post(reverse('anunciar'), {**self.dados, 'titulo': '', 'area': '0'})
+        self.assertEqual(resposta.status_code, 400)
+        self.assertContains(resposta, 'Confira os campos marcados', status_code=400)
+        self.assertFalse(Imovel.objects.filter(proprietario=self.user).exists())

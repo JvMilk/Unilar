@@ -306,6 +306,18 @@ class AdminImovelForm(forms.ModelForm):
             raise forms.ValidationError('Não foi possível ler uma das imagens. Envie fotos JPG, PNG ou WEBP.')
 
 
+class AnuncioImovelForm(AdminImovelForm):
+    """Formulário público "Anunciar imóvel": o mesmo do admin, sem status e responsável
+    (o anúncio entra como pendente e fica no nome de quem enviou)."""
+
+    class Meta(AdminImovelForm.Meta):
+        fields = [campo for campo in AdminImovelForm.Meta.fields if campo not in ('status', 'proprietario')]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['fotos'].help_text = 'Selecione várias de uma vez ou adicione aos poucos. A primeira foto vira a capa do anúncio.'
+
+
 class AdminConfiguracaoForm(forms.ModelForm):
     class Meta:
         model = ConfiguracaoSite

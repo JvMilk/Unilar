@@ -134,32 +134,32 @@ def excluir_imovel(request, pk):
 
 @admin_required
 def anuncios_admin(request):
-    anuncios = Imovel.objects.select_related('proprietario').all()
+    """Anúncios enviados pelo site que aguardam aprovação da equipe."""
+    anuncios = (
+        Imovel.objects.filter(status=Imovel.Status.PENDENTE)
+        .select_related('proprietario').prefetch_related('fotos').order_by('criado_em', 'pk')
+    )
     busca = request.GET.get('q', '').strip()
-    status = request.GET.get('status', '')
     if busca:
         anuncios = anuncios.filter(titulo__icontains=busca) | anuncios.filter(endereco__icontains=busca)
-    if status in Imovel.Status.values:
-        anuncios = anuncios.filter(status=status)
-    return render(request, 'admin/anuncios.html', {
-        'anuncios': anuncios,
-        'q': busca,
-        'status_selecionado': status,
-        'status_choices': Imovel.Status.choices,
-    })
+    return render(request, 'admin/anuncios.html', {'anuncios': anuncios, 'q': busca})
 
 
 @admin_required
 @require_POST
 def atualizar_anuncio(request, pk):
-    anuncio = get_object_or_404(Imovel, pk=pk)
-    status = request.POST.get('status')
-    if status not in Imovel.Status.values:
-        messages.error(request, 'Selecione um status válido.')
+    anuncio = get_object_or_404(Imovel, pk=pk, status=Imovel.Status.PENDENTE)
+    acao = request.POST.get('acao')
+    if acao == 'aprovar':
+        anuncio.status = Imovel.Status.DISPONIVEL
+        messages.success(request, f'"{anuncio.titulo}" aprovado e publicado no site.')
+    elif acao == 'recusar':
+        anuncio.status = Imovel.Status.INATIVO
+        messages.success(request, f'"{anuncio.titulo}" recusado. Ele continua em Imóveis como inativo.')
     else:
-        anuncio.status = status
-        anuncio.save(update_fields=['status', 'atualizado_em'])
-        messages.success(request, 'Status do anúncio atualizado.')
+        messages.error(request, 'Escolha aprovar ou recusar o anúncio.')
+        return redirect('admin_anuncios')
+    anuncio.save(update_fields=['status', 'atualizado_em'])
     return redirect('admin_anuncios')
 
 

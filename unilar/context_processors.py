@@ -1,4 +1,4 @@
-from .models import ConfiguracaoSite, ContatoImovel, DadosPainel, PerfilCadastro
+from .models import ConfiguracaoSite, ContatoImovel, DadosPainel, Imovel, PerfilCadastro
 
 
 def avatar_usuario(user):
@@ -20,6 +20,7 @@ def configuracao_site(request):
     contexto = {
         'configuracao_site': configuracao,
         'admin_pending_questions': 0,
+        'admin_pending_anuncios': 0,
         'admin_recent_questions': [],
         **avatar_usuario(request.user),
     }
@@ -29,4 +30,5 @@ def configuracao_site(request):
         )
         contexto['admin_pending_questions'] = pendentes.count()
         contexto['admin_recent_questions'] = pendentes[:3]
+        contexto['admin_pending_anuncios'] = Imovel.objects.filter(status=Imovel.Status.PENDENTE).count()
     return contexto

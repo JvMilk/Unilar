@@ -29,6 +29,10 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'duvidas' %}"{% if request.resolver_match.url_name == "duvidas" %} aria-current="page"{% endif %}>Dúvidas</a>
                             </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'anunciar' %}"{% if request.resolver_match.url_name == "anunciar" %} aria-current="page"{% endif %}>Anunciar imóvel</a>
+                            </li>
                         </ul>
 
                         <div class="acoes-menu">

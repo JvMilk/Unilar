@@ -25,6 +25,7 @@ urlpatterns = [
     path('inicio/', views.inicio, name='inicio'),
     path('catalogo/<slug:slug>/favoritar/', views.favoritar_catalogo, name='favoritar_catalogo'),
     path('cadastro/', views.cadastro, name='cadastro'),
+    path('anunciar/', views.anunciar_imovel, name='anunciar'),
     path('login/', views.login, name='login'),
     path('imoveis/', views.imoveis, name='imoveis'),
     path('imoveis/kitnet-no-centro/', views.detalhe_imovel, name='detalhe_imovel'),

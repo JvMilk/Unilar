@@ -1,17 +1,28 @@
 {% extends "unilar_admin/base.html" %}
-{% block title %}Gerenciar anúncios{% endblock %}
-{% block breadcrumb %}Anúncios{% endblock %}
+{% block title %}Anúncios pendentes{% endblock %}
+{% block breadcrumb %}Anúncios pendentes{% endblock %}
 {% block content %}
-<div class="page-heading"><div><p class="eyebrow">PUBLICAÇÃO E MODERAÇÃO</p><h1>Gerenciar anúncios</h1><p>Aprove, desative ou atualize os anúncios cadastrados.</p></div></div>
+<div class="page-heading"><div><p class="eyebrow">MODERAÇÃO</p><h1>Anúncios pendentes</h1><p>Imóveis enviados pelo site. Confira cada anúncio e aprove para ele ir ao ar.</p></div></div>
 <section class="panel-card">
   <form class="filter-bar" method="get">
     <label class="search-control"><i class="bi bi-search"></i><input type="search" name="q" value="{{ q }}" placeholder="Pesquisar anúncio ou endereço"></label>
-    <select name="status" aria-label="Filtrar por status"><option value="">Todos os status</option>{% for value,label in status_choices %}<option value="{{ value }}" {% if status_selecionado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
     <button class="button button-light">Filtrar</button>
   </form>
-  <div class="table-wrap"><table class="admin-table"><thead><tr><th>Anúncio</th><th>Responsável</th><th>Aluguel</th><th>Status</th><th>Atualizar status</th></tr></thead><tbody>
-    {% for anuncio in anuncios %}<tr><td><strong>{{ anuncio.titulo }}</strong><small>{{ anuncio.endereco }}, {{ anuncio.cidade }}</small></td><td>{{ anuncio.proprietario.email|default:"UniLar" }}</td><td>R$ {{ anuncio.preco }}</td><td><span class="status status-{{ anuncio.status }}">{{ anuncio.get_status_display }}</span></td><td><form class="inline-status" method="post" action="{% url 'admin_anuncio_status' anuncio.pk %}">{% csrf_token %}<select name="status" aria-label="Novo status de {{ anuncio.titulo }}">{% for value,label in status_choices %}<option value="{{ value }}" {% if anuncio.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="icon-button" aria-label="Salvar status"><i class="bi bi-check2"></i></button><a class="icon-button" href="{% url 'admin_imovel_editar' anuncio.pk %}" aria-label="Editar {{ anuncio.titulo }}"><i class="bi bi-pencil"></i></a></form></td></tr>
-    {% empty %}<tr><td colspan="5" class="empty-row">Nenhum anúncio encontrado.</td></tr>{% endfor %}
+  <div class="table-wrap"><table class="admin-table"><thead><tr><th>Anúncio</th><th>Enviado por</th><th>Aluguel</th><th>Enviado em</th><th>Ações</th></tr></thead><tbody>
+    {% for anuncio in anuncios %}
+    <tr>
+      <td><div class="property-cell">{% with foto=anuncio.fotos.all|first %}{% if foto %}<img src="{{ foto.imagem.url }}" alt="">{% else %}<span class="image-fallback"><i class="bi bi-image"></i></span>{% endif %}{% endwith %}<div><strong>{{ anuncio.titulo }}</strong><small>{{ anuncio.endereco }}, {{ anuncio.cidade }}</small></div></div></td>
+      <td>{{ anuncio.proprietario.email|default:"—" }}</td>
+      <td>R$ {{ anuncio.preco }}</td>
+      <td>{{ anuncio.criado_em|date:"d/m/Y H:i" }}</td>
+      <td><div class="moderation-actions">
+        <a class="button button-light" href="{% url 'imovel_publico' anuncio.slug %}" target="_blank" rel="noopener"><i class="bi bi-eye"></i> Ver anúncio</a>
+        <a class="icon-button" href="{% url 'admin_imovel_editar' anuncio.pk %}" aria-label="Editar {{ anuncio.titulo }}" title="Editar"><i class="bi bi-pencil"></i></a>
+        <form method="post" action="{% url 'admin_anuncio_status' anuncio.pk %}">{% csrf_token %}<input type="hidden" name="acao" value="aprovar"><button class="button button-primary"><i class="bi bi-check2"></i> Aprovar</button></form>
+        <form method="post" action="{% url 'admin_anuncio_status' anuncio.pk %}" data-confirm="Recusar o anúncio &quot;{{ anuncio.titulo }}&quot;? Ele não vai aparecer no site.">{% csrf_token %}<input type="hidden" name="acao" value="recusar"><button class="button button-danger"><i class="bi bi-x-lg"></i> Recusar</button></form>
+      </div></td>
+    </tr>
+    {% empty %}<tr><td colspan="5" class="empty-row"><i class="bi bi-check2-circle"></i> Nenhum anúncio aguardando aprovação.</td></tr>{% endfor %}
   </tbody></table></div>
 </section>
 {% endblock %}

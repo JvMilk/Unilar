@@ -227,10 +227,16 @@ def contexto_detalhe(request, imovel):
 
 def imovel_publico(request, slug):
     imovel = get_object_or_404(
-        Imovel.objects.prefetch_related('fotos').select_related('proprietario'),
-        slug=slug,
-        status=Imovel.Status.DISPONIVEL,
+        Imovel.objects.prefetch_related('fotos').select_related('proprietario'), slug=slug,
     )
+    if imovel.status != Imovel.Status.DISPONIVEL:
+        # Fora do ar: só a equipe e quem anunciou podem ver (pré-visualização).
+        dono = request.user.is_authenticated and imovel.proprietario_id == request.user.pk
+        if not (request.user.is_staff or dono):
+            raise Http404('Imóvel indisponível.')
+        contexto = contexto_detalhe(request, imovel)
+        contexto['pre_visualizacao'] = True
+        return render(request, 'imovel_publico.html', contexto)
     request.session['visitados'] = list(dict.fromkeys(
         request.session.get('visitados', []) + [slug]
     ))
@@ -436,3 +442,30 @@ def painel_foto(request):
 def sair(request):
     logout(request)
     return redirect('inicio')
+
+
+@login_required(login_url='login')
+def anunciar_imovel(request):
+    """Qualquer pessoa logada envia um imóvel; ele fica pendente até a equipe aprovar."""
+    from .forms import AnuncioImovelForm
+    from .models import FotoImovel
+
+    form = AnuncioImovelForm(request.POST or None, request.FILES or None)
+    if request.method == 'POST' and form.is_valid():
+        with transaction.atomic():
+            imovel = form.save(commit=False)
+            imovel.proprietario = request.user
+            imovel.status = Imovel.Status.PENDENTE
+            imovel.save()
+            for foto in form.cleaned_data['fotos']:
+                FotoImovel.objects.create(imovel=imovel, imagem=foto)
+        messages.success(
+            request,
+            f'Anúncio "{imovel.titulo}" enviado! A equipe UniLar vai analisar e, depois de aprovado, ele aparece no site.',
+        )
+        return redirect('anunciar')
+    meus_anuncios = Imovel.objects.filter(proprietario=request.user).order_by('-criado_em', 'pk')[:10]
+    return render(request, 'anunciar.html', {
+        'form': form,
+        'meus_anuncios': meus_anuncios,
+    }, status=400 if request.method == 'POST' else 200)
