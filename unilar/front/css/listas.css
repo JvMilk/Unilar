@@ -1,0 +1,54 @@
+/* Lista de opções dos <select> no visual do UniLar (montada por js/listas.js). */
+.lista-suspensa {
+    --lista-texto: #07196b;
+    --lista-suave: #4963a4;
+    --lista-hover: #eef3ff;
+    --lista-borda: #cedcff;
+    --lista-escolhida: linear-gradient(100deg, #0750ff, #8035ff);
+    position: fixed;
+    z-index: 2000;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 6px;
+    border: 1px solid var(--lista-borda);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 16px 36px #07196b26, 0 2px 6px #07196b14;
+    color: var(--lista-texto);
+    font: inherit;
+    font-size: 15px;
+    scrollbar-width: thin;
+}
+.lista-suspensa ul { margin: 0; padding: 0; list-style: none; }
+.lista-suspensa li[role="option"] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    line-height: 1.3;
+    cursor: pointer;
+    user-select: none;
+}
+.lista-suspensa li[role="option"] + li[role="option"] { margin-top: 2px; }
+.lista-suspensa li.ativo { background: var(--lista-hover); }
+.lista-suspensa li[aria-selected="true"] { background: var(--lista-escolhida); color: #fff; }
+.lista-suspensa li[aria-selected="true"].ativo { filter: brightness(1.06); }
+.lista-suspensa li[aria-selected="true"] i { font-size: 16px; }
+.lista-suspensa li[aria-disabled="true"] { color: #a2a9b6; cursor: not-allowed; background: none; }
+.lista-suspensa .lista-suspensa-grupo { padding: 10px 14px 4px; color: var(--lista-suave); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+/* No painel administrativo, as cores do admin */
+.lista-suspensa-admin {
+    --lista-texto: #26334c;
+    --lista-suave: #78839a;
+    --lista-hover: #f0f4ff;
+    --lista-borda: #dce4f2;
+    --lista-escolhida: linear-gradient(100deg, #2f62e5, #5b31db);
+    border-radius: 12px;
+    font-size: 13px;
+}
+.lista-suspensa-admin li[role="option"] { padding: 8px 12px; border-radius: 8px; }

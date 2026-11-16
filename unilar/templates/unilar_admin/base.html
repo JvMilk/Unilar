@@ -7,6 +7,7 @@
   <title>{% block title %}Administração{% endblock %} | {{ configuracao_site.nome_site|default:"UniLar" }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{% static 'css/admin.css' %}?v=20261116-anuncios" rel="stylesheet">
+  <link href="{% static 'css/listas.css' %}?v=2" rel="stylesheet">
 </head>
 <body class="admin-page">
   <button class="admin-menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
@@ -69,6 +70,7 @@
   </main>
   <script src="{% static 'js/admin.js' %}?v=20261116-anuncios" defer></script>
   <script src="{% static 'js/fotos.js' %}?v=20261116-anuncios" defer></script>
+  <script src="{% static 'js/listas.js' %}?v=2" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
