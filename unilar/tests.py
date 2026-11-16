@@ -496,8 +496,8 @@ class AdminAreaTests(TestCase):
             self.assertEqual(imovel.fotos.count(), 1)
             arquivo_foto = imovel.fotos.first().imagem.path
             self.assertTrue(arquivo_foto.endswith('.jpg'))  # foto otimizada e regravada como JPEG
-            destaques = self.client.get(reverse('inicio')).context['imoveis']
-            self.assertIn(imovel.slug, {item['slug'] for item in destaques})
+            catalogo = self.client.get(reverse('imoveis')).context['imoveis']
+            self.assertIn(imovel.slug, {item['slug'] for item in catalogo})
             self.assertContains(
                 self.client.get(reverse('imoveis'), {
                     'cidade': 'Uberaba - MG', 'tipo': Imovel.Tipo.OUTRO,
@@ -752,3 +752,59 @@ class AnunciarImovelTests(TestCase):
         self.assertEqual(resposta.status_code, 400)
         self.assertContains(resposta, 'Confira os campos marcados', status_code=400)
         self.assertFalse(Imovel.objects.filter(proprietario=self.user).exists())
+
+
+class DestaquesInicioTests(TestCase):
+    def test_inicio_mostra_so_os_4_disponiveis_mais_caros(self):
+        Imovel.objects.all().delete()
+        precos = ['650.00', '1650.00', '900.00', '1400.00', '1300.00', '1100.00', '3000.00']
+        for i, preco in enumerate(precos):
+            Imovel.objects.create(
+                titulo=f'Imóvel {i}', descricao='Teste.', preco=preco, endereco='Rua A, 1',
+                bairro='Centro', cidade='Rio Paranaíba - MG', area=30, tipo=Imovel.Tipo.CASA,
+                status=Imovel.Status.ALUGADO if preco == '3000.00' else Imovel.Status.DISPONIVEL,
+            )
+        destaques = self.client.get(reverse('inicio')).context['imoveis']
+        self.assertEqual([str(item['preco']) for item in destaques], ['1650.00', '1400.00', '1300.00', '1100.00'])
+        self.assertEqual(len(self.client.get(reverse('imoveis')).context['imoveis']), 6)
+
+
+class MapaEFiltrosImoveisTests(TestCase):
+    def setUp(self):
+        Imovel.objects.all().delete()
+        dados = [
+            ('Kitnet A', Imovel.Tipo.KITNET, '650.00', 'Novo Rio', Imovel.Status.DISPONIVEL),
+            ('Casa B', Imovel.Tipo.CASA, '900.00', 'Universitário', Imovel.Status.DISPONIVEL),
+            ('Casa C', Imovel.Tipo.CASA, '1400.00', 'Universitário', Imovel.Status.DISPONIVEL),
+            ('Casa D', Imovel.Tipo.CASA, '1000.00', 'Bairro Novo', Imovel.Status.DISPONIVEL),
+            ('Apto alugado', Imovel.Tipo.APARTAMENTO, '1200.00', 'Centro', Imovel.Status.ALUGADO),
+        ]
+        for titulo, tipo, preco, bairro, status in dados:
+            Imovel.objects.create(
+                titulo=titulo, descricao='Teste.', preco=preco, endereco='Rua A, 1', bairro=bairro,
+                cidade='Rio Paranaíba - MG', area=30, tipo=tipo, status=status,
+            )
+
+    def test_mapa_mostra_bairros_com_imoveis_disponiveis_e_filtra(self):
+        pagina = self.client.get(reverse('imoveis'))
+        mapa = {r['nome']: r['total'] for r in pagina.context['regioes_mapa']}
+        self.assertEqual(mapa, {'Novo Rio': 1, 'Universitário': 2})
+        self.assertEqual([r['nome'] for r in pagina.context['regioes_fora']], ['Bairro Novo'])
+        self.assertContains(pagina, 'class="mapa-ilustrativo"')
+        self.assertContains(pagina, 'aria-label="Universitário: 2 imóveis"')
+        self.assertContains(pagina, 'Bairro Novo (1)')
+        self.assertNotContains(pagina, 'Ver todos os bairros')
+
+        filtrada = self.client.get(reverse('imoveis'), {'bairro': 'Universitário'})
+        self.assertEqual({i['titulo'] for i in filtrada.context['imoveis']}, {'Casa B', 'Casa C'})
+        self.assertContains(filtrada, 'value="Universitário" class="mapa-pino mapa-pino-esquerda"')
+        self.assertContains(filtrada, 'aria-pressed="true"')
+        self.assertContains(filtrada, 'Ver todos os bairros')
+
+    def test_filtros_usam_tipos_existentes_e_tetos_realistas(self):
+        pagina = self.client.get(reverse('imoveis'))
+        self.assertEqual(pagina.context['tipos'], [('kitnet', 'Kitnet (1)'), ('casa', 'Casa (3)')])
+        self.assertContains(pagina, 'Até R$ 1.100/mês')
+        self.assertNotContains(pagina, 'R$ 3500')
+        ate_900 = self.client.get(reverse('imoveis'), {'maximo': '900'})
+        self.assertEqual({i['titulo'] for i in ate_900.context['imoveis']}, {'Kitnet A', 'Casa B'})

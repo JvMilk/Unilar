@@ -84,7 +84,8 @@ def imoveis(request):
 
 
 def inicio(request):
-    return catalogo(request, titulo='Imóveis em destaque')
+    # Página inicial: só os 4 imóveis disponíveis mais caros (a lista completa fica em Imóveis).
+    return catalogo(request, titulo='Imóveis em destaque', mais_caros=4)
 
 
 def sobre(request):
@@ -99,7 +100,22 @@ def sobre(request):
     })
 
 
-def catalogo(request, titulo='Imóveis', somente_favoritos=False, template='inicio.html'):
+# Mapa ilustrativo de Rio Paranaíba (página Imóveis): posição aproximada de cada bairro, em % da área
+# do mapa, e de que lado do pino fica o nome. Bairros fora desta lista aparecem como botões abaixo do mapa.
+BAIRROS_NO_MAPA = {
+    'São Francisco': (50, 12, 'direita'),
+    'Centro': (20, 22, 'direita'),
+    'Vila dos Professores': (82, 32, 'esquerda'),
+    'Novo Rio': (28, 42, 'direita'),
+    'Progresso': (52, 52, 'direita'),
+    'Universitário': (82, 62, 'esquerda'),
+    'Jardim Primavera': (38, 71, 'direita'),
+}
+# Teto do filtro "Preço máximo", de acordo com os aluguéis da cidade.
+TETOS_PRECO = ('700', '900', '1100', '1400')
+
+
+def catalogo(request, titulo='Imóveis', somente_favoritos=False, template='inicio.html', mais_caros=None):
     cidade = request.GET.get('cidade', '')
     tipo = request.GET.get('tipo', '')
     preco = request.GET.get('preco', '')
@@ -108,10 +124,22 @@ def catalogo(request, titulo='Imóveis', somente_favoritos=False, template='inic
     bairro = request.GET.get('bairro', '')
     ordenar = request.GET.get('ordem', '')
     limite = request.GET.get('maximo', '')
-    tetos = ('1200', '1800', '2500', '3500')
-    bairros = Imovel.objects.filter(
-        status=Imovel.Status.DISPONIVEL,
-    ).exclude(bairro='').values_list('bairro', flat=True).distinct().order_by('bairro')
+    tetos = TETOS_PRECO
+    disponiveis = Imovel.objects.filter(status=Imovel.Status.DISPONIVEL)
+    por_bairro = dict(
+        disponiveis.exclude(bairro='').values_list('bairro').annotate(total=Count('pk')).order_by('bairro')
+    )
+    regioes_mapa, regioes_fora = [], []
+    for nome, total in por_bairro.items():
+        regiao = {'nome': nome, 'total': total}
+        if nome in BAIRROS_NO_MAPA:
+            regiao['x'], regiao['y'], regiao['lado'] = BAIRROS_NO_MAPA[nome]
+            regioes_mapa.append(regiao)
+        else:
+            regioes_fora.append(regiao)
+    # Só os tipos que têm imóvel disponível, com a quantidade de cada um.
+    por_tipo = dict(disponiveis.values_list('tipo').annotate(total=Count('pk')).order_by())
+    tipos = [(valor, f'{rotulo} ({por_tipo[valor]})') for valor, rotulo in Imovel.Tipo.choices if por_tipo.get(valor)]
     resultado = []
     for registro in Imovel.objects.filter(status=Imovel.Status.DISPONIVEL).prefetch_related('fotos'):
         item = dados_catalogo(registro, salvos)
@@ -137,11 +165,13 @@ def catalogo(request, titulo='Imóveis', somente_favoritos=False, template='inic
         resultado.append({**item, 'favorito': item['slug'] in salvos})
     if ordenar in ('low', 'high'):
         resultado.sort(key=lambda item: item['preco'], reverse=ordenar == 'high')
+    if mais_caros:
+        resultado = sorted(resultado, key=lambda item: item['preco'], reverse=True)[:mais_caros]
     return render(request, template, {
-        'q': busca, 'bairro': bairro, 'bairros': bairros, 'ordem': ordenar,
+        'q': busca, 'bairro': bairro, 'regioes_mapa': regioes_mapa, 'regioes_fora': regioes_fora, 'ordem': ordenar,
         'maximo': limite, 'tetos': tetos,
         'titulo': titulo, 'imoveis': resultado, 'cidade': cidade,
-        'tipo': tipo, 'tipos': Imovel.Tipo.choices, 'preco': preco,
+        'tipo': tipo, 'tipos': tipos, 'preco': preco,
         'cidades': Imovel.objects.filter(
             status=Imovel.Status.DISPONIVEL,
         ).values_list('cidade', flat=True).distinct().order_by('cidade'),
@@ -364,7 +394,7 @@ from .models import DadosPainel
 from .forms import FotoPerfilForm, PerfilPainelForm
 from django.http import HttpResponse
 from django.utils import timezone
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from django.templatetags.static import static
 from urllib.parse import quote_plus
 
